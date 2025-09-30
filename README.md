@@ -1,0 +1,2 @@
+# Attuario-Ai-
+implementare ai
