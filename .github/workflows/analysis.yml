@@ -18,7 +18,7 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Run pipeline
+      - name: run pipeline
          run:|
               PYTHONPATH=. python scripts/run_pipeline.py https://www.attuario.eu \
               --max-pages 50 \
