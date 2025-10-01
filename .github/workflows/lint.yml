@@ -1,19 +1,19 @@
 name: Lint
 
 on:
-  push:
-  pull_request:
+  schedule:
+    - cron: "0 6 * * *"   # tutti i giorni alle 6:00 UTC
+  workflow_dispatch:       # avvio manuale da GitHub UI
 
 jobs:
-  lint:
-    runs-on: [self-hosted, ubuntu-latest]
+  analysis:
+    runs-on: self-hosted
+
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
+      - name: Usa Python locale
+        run: python3 --version
 
       - name: Install dependencies
         run: |
