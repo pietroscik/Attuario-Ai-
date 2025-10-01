@@ -20,13 +20,13 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Run pipeline on attuario.eu
-        run: |
-          python scripts/run_pipeline.py https://www.attuario.eu \
-            --max-pages 50 \
-            --max-depth 2 \
-            --delay 0.5 \
-            --output-dir outputs
+      - name: Run pipeline
+         run:|
+              PYTHONPATH=. python scripts/run_pipeline.py https://www.attuario.eu \
+              --max-pages 50 \
+              --max-depth 2 \
+              --delay 0.5 \
+              --output-dir outputs
 
       - name: Upload results
         uses: actions/upload-artifact@v4
