@@ -10,7 +10,6 @@ import pandas as pd
 @dataclass
 class EvaluationResult:
     """Risultati sintetici della valutazione del modello."""
-
     mae: float
     rmse: float
     r2: float
@@ -68,7 +67,9 @@ class Learner:
     ) -> None:
         self.data = data.copy()
         self.target = target
-        self.features = features or [c for c in self.data.columns if c != target]
+        self.features = features or [
+            c for c in self.data.columns if c != target
+        ]
         self.test_size = max(0.0, min(0.9, float(test_size)))
         self.seed = seed
 
@@ -122,7 +123,9 @@ def main() -> None:
     df = pd.DataFrame({"x1": x1, "x2": x2, "y": y})
     learner = Learner(df, target="y", features=["x1", "x2"], test_size=0.2, seed=7)
     result = learner.fit_evaluate()
-    print(f"MAE={result.mae:.3f} | RMSE={result.rmse:.3f} | R2={result.r2:.3f}")
+    print(
+        f"MAE={result.mae:.3f} | RMSE={result.rmse:.3f} | R2={result.r2:.3f}"
+    )
 
 
 if __name__ == "__main__":
