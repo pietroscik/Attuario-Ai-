@@ -11,6 +11,9 @@ jobs:
 
 
     steps:
+      - name: Install project
+          run:|
+          pip install -e .
       - name: Checkout repository
         uses: actions/checkout@v4
 
