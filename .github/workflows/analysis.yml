@@ -7,19 +7,16 @@ on:
 
 jobs:
   analysis:
-    runs-on: [self-hosted, linux, ARM64]
+    runs-on: self-hosted
 
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-         python-version: "3.13.3"
-         architecture: "arm64"
-
+      - uses: actions/checkout@v4
+      - name: Usa Python locale
+        run: python3 --version
       - name: Install dependencies
         run: pip install -r requirements.txt
 
