@@ -18,7 +18,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install -r requirements.txt || true
+          python3 -m pip install --upgrade --quiet --no-cache-dir -r requirements.txt
+
 
       - name: Run pipeline
         run: |
