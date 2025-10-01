@@ -16,9 +16,9 @@ jobs:
       - name: Python version check
         run: python3 --version
 
-      - name: Install lint dependencies
+      - name: Install dependencies
         run: |
-          pip install pylint flake8
+          python3 -m pip install --quiet --no-cache-dir -r requirements-dev.txt
 
       - name: Run Pylint
         run: |
