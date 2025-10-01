@@ -18,7 +18,13 @@ class ScoreWeights:
     clarity: float = 0.1
 
     def normalize(self) -> "ScoreWeights":
-        total = self.accuracy + self.transparency + self.completeness + self.freshness + self.clarity
+        total = (
+            self.accuracy
+            + self.transparency
+            + self.completeness
+            + self.freshness
+            + self.clarity
+        )
         if not total:
             raise ValueError("Weights sum to zero")
         return ScoreWeights(
@@ -60,7 +66,9 @@ class PageScore:
 FRESHNESS_DECAY_DAYS = 365
 
 
-def score_page(metrics: PageMetrics, metadata: Dict[str, str], weights: ScoreWeights) -> PageScore:
+def score_page(
+    metrics: PageMetrics, metadata: Dict[str, str], weights: ScoreWeights
+) -> PageScore:
     components = compute_components(metrics, metadata)
     composite = apply_weights(components, weights)
     classification = _classify(composite)
@@ -72,12 +80,16 @@ def score_page(metrics: PageMetrics, metadata: Dict[str, str], weights: ScoreWei
     )
 
 
-def compute_components(metrics: PageMetrics, metadata: Dict[str, str]) -> Dict[str, float]:
+def compute_components(
+    metrics: PageMetrics, metadata: Dict[str, str]
+) -> Dict[str, float]:
     return {
         "accuracy": _score_accuracy(metrics),
         "transparency": _score_transparency(metrics),
         "completeness": _score_completeness(metrics),
-        "freshness": _score_freshness(metadata.get("modified") or metadata.get("published")),
+        "freshness": _score_freshness(
+            metadata.get("modified") or metadata.get("published")
+        ),
         "clarity": _score_clarity(metrics),
     }
 

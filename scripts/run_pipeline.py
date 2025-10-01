@@ -11,12 +11,25 @@ from attuario_ai import EvaluationPipeline, ScoreWeights
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Evaluate actuarial content quality for a domain.")
-    parser.add_argument("base_url", help="Starting URL for the crawl (e.g. https://www.example.com)")
-    parser.add_argument("--max-pages", type=int, default=25, help="Maximum number of pages to crawl")
+    parser = argparse.ArgumentParser(
+        description="Evaluate actuarial content quality for a domain."
+    )
+    parser.add_argument(
+        "base_url", help="Starting URL for the crawl (e.g. https://www.example.com)"
+    )
+    parser.add_argument(
+        "--max-pages", type=int, default=25, help="Maximum number of pages to crawl"
+    )
     parser.add_argument("--max-depth", type=int, default=1, help="Maximum crawl depth")
-    parser.add_argument("--delay", type=float, default=0.2, help="Delay between requests in seconds")
-    parser.add_argument("--output-dir", type=Path, default=Path("outputs"), help="Directory for generated reports")
+    parser.add_argument(
+        "--delay", type=float, default=0.2, help="Delay between requests in seconds"
+    )
+    parser.add_argument(
+        "--output-dir",
+        type=Path,
+        default=Path("outputs"),
+        help="Directory for generated reports",
+    )
     parser.add_argument(
         "--weights",
         type=Path,
@@ -48,7 +61,9 @@ def main() -> None:
         summary = pipeline.summary(results)
 
     summary_path = output_dir / "summary.json"
-    summary_path.write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")
+    summary_path.write_text(
+        json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8"
+    )
     print(json.dumps(summary, indent=2, ensure_ascii=False))
 
 

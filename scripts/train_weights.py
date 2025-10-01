@@ -13,9 +13,15 @@ from attuario_ai.learning import WeightLearner, normalize_url, samples_from_resu
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Learn score weights from labelled pages.")
-    parser.add_argument("base_url", help="Base domain for crawling (e.g. https://www.attuario.eu)")
-    parser.add_argument("labels", type=Path, help="JSON file with [{'url': str, 'target_score': float}]")
+    parser = argparse.ArgumentParser(
+        description="Learn score weights from labelled pages."
+    )
+    parser.add_argument(
+        "base_url", help="Base domain for crawling (e.g. https://www.attuario.eu)"
+    )
+    parser.add_argument(
+        "labels", type=Path, help="JSON file with [{'url': str, 'target_score': float}]"
+    )
     parser.add_argument(
         "--max-pages",
         type=int,
@@ -78,7 +84,9 @@ def main() -> None:
     weights = learner.fit(samples)
     evaluation = learner.evaluate(samples, weights)
 
-    args.output.write_text(json.dumps(weights.to_dict(), indent=2, ensure_ascii=False), encoding="utf-8")
+    args.output.write_text(
+        json.dumps(weights.to_dict(), indent=2, ensure_ascii=False), encoding="utf-8"
+    )
 
     report = {
         "weights": weights.to_dict(),

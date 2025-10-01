@@ -1,96 +1,129 @@
-"""Utilities to learn scoring weights from human feedback."""
-
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Dict, Iterable, List, Mapping, Sequence
+from typing import Dict, List, Optional, Tuple
 
 import numpy as np
-
-from .scoring import ScoreWeights, apply_weights, compute_components
-
-
-COMPONENT_KEYS = ("accuracy", "transparency", "completeness", "freshness", "clarity")
+import pandas as pd
 
 
 @dataclass
-class TrainingSample:
-    """Represents a manually reviewed page used to calibrate weights."""
+class EvaluationResult:
+    """Risultati sintetici della valutazione del modello."""
 
-    url: str
-    components: Dict[str, float]
-    target_score: float
-
-
-class WeightLearner:
-    """Fit ``ScoreWeights`` using least squares on feedback samples."""
-
-    def __init__(self, *, min_samples: int = 2) -> None:
-        self.min_samples = min_samples
-
-    def fit(self, samples: Sequence[TrainingSample]) -> ScoreWeights:
-        if len(samples) < self.min_samples:
-            raise ValueError(f"At least {self.min_samples} samples are required to fit weights")
-
-        matrix = np.array([[sample.components.get(key, 0.0) for key in COMPONENT_KEYS] for sample in samples], dtype=float)
-        targets = np.array([sample.target_score for sample in samples], dtype=float)
-
-        solution, *_ = np.linalg.lstsq(matrix, targets, rcond=None)
-        solution = np.clip(solution, 0.0, None)
-
-        if not solution.any():
-            return ScoreWeights()
-
-        total = solution.sum()
-        if total <= 0:
-            return ScoreWeights()
-
-        normalized = solution / total
-        return ScoreWeights(
-            accuracy=float(normalized[0]),
-            transparency=float(normalized[1]),
-            completeness=float(normalized[2]),
-            freshness=float(normalized[3]),
-            clarity=float(normalized[4]),
-        )
-
-    def evaluate(self, samples: Sequence[TrainingSample], weights: ScoreWeights) -> Dict[str, float]:
-        predictions = [apply_weights(sample.components, weights) for sample in samples]
-        errors = [prediction - sample.target_score for prediction, sample in zip(predictions, samples)]
-        absolute_errors = [abs(error) for error in errors]
-        if not errors:
-            return {"count": 0, "mae": 0.0, "mse": 0.0}
-        mae = sum(absolute_errors) / len(absolute_errors)
-        mse = sum(error ** 2 for error in errors) / len(errors)
-        return {"count": len(errors), "mae": round(mae, 2), "mse": round(mse, 2)}
+    mae: float
+    rmse: float
+    r2: float
+    details: Dict[str, float]
 
 
-def samples_from_results(
-    results: Iterable["EvaluationResult"],
-    targets: Mapping[str, float],
-) -> List[TrainingSample]:
-    from .pipeline import EvaluationResult  # Local import to avoid circular dependency
-
-    lookup = {normalize_url(url): score for url, score in targets.items()}
-    samples: List[TrainingSample] = []
-    for result in results:
-        if not isinstance(result, EvaluationResult):
-            continue
-        normalized_url = normalize_url(result.page.url)
-        if normalized_url not in lookup:
-            continue
-        metadata = dict(result.page.metadata)
-        metadata["url"] = result.page.url
-        components = {key: float(value) for key, value in compute_components(result.metrics, metadata).items()}
-        samples.append(
-            TrainingSample(
-                url=result.page.url,
-                components=components,
-                target_score=float(lookup[normalized_url]),
-            )
-        )
-    return samples
+def _train_linear_regression(
+    X: np.ndarray, y: np.ndarray
+) -> Tuple[np.ndarray, np.ndarray]:
+    """
+    Stima una regressione lineare con minimi quadrati (senza sklearn).
+    Restituisce (coef, y_pred).
+    """
+    # Aggiunge il bias (intercetta)
+    ones = np.ones((X.shape[0], 1), dtype=float)
+    Xb = np.hstack((ones, X))
+    coef, *_ = np.linalg.lstsq(Xb, y, rcond=None)
+    y_pred = Xb @ coef
+    return coef, y_pred
 
 
-def normalize_url(url: str) -> str:
-    return url.rstrip("/")
+def _metrics(y_true: np.ndarray, y_pred: np.ndarray) -> EvaluationResult:
+    """Calcola metriche classiche di regressione."""
+    resid = y_true - y_pred
+    mae = float(np.mean(np.abs(resid)))
+    rmse = float(np.sqrt(np.mean(resid**2)))
+    # R^2
+    ss_res = float(np.sum(resid**2))
+    ss_tot = float(np.sum((y_true - np.mean(y_true)) ** 2))
+    r2 = 1.0 - ss_res / ss_tot if ss_tot > 0 else 0.0
+    return EvaluationResult(
+        mae=mae,
+        rmse=rmse,
+        r2=r2,
+        details={"ss_res": ss_res, "ss_tot": ss_tot},
+    )
+
+
+class Learner:
+    """
+    Esegue una pipeline minimale:
+    - preprocess (dropna, selezione colonne)
+    - split train/test
+    - stima regressione lineare
+    - metriche su test
+    """
+
+    def __init__(
+        self,
+        data: pd.DataFrame,
+        target: str,
+        features: Optional[List[str]] = None,
+        test_size: float = 0.2,
+        seed: Optional[int] = None,
+    ) -> None:
+        self.data = data.copy()
+        self.target = target
+        self.features = features or [c for c in self.data.columns if c != target]
+        self.test_size = max(0.0, min(0.9, float(test_size)))
+        self.seed = seed
+
+    def preprocess(self) -> pd.DataFrame:
+        cols = [*self.features, self.target]
+        df = self.data.loc[:, cols].dropna()
+        # Cast numerico “robusto”
+        for c in cols:
+            df[c] = pd.to_numeric(df[c], errors="coerce")
+        df = df.dropna()
+        return df
+
+    def _split(
+        self, df: pd.DataFrame
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+        n = len(df)
+        n_test = max(1, int(round(self.test_size * n)))
+        idx = np.arange(n)
+        rng = np.random.default_rng(self.seed)
+        rng.shuffle(idx)
+        test_idx = idx[:n_test]
+        train_idx = idx[n_test:]
+        X = df[self.features].to_numpy(dtype=float)
+        y = df[self.target].to_numpy(dtype=float)
+        return X[train_idx], y[train_idx], X[test_idx], y[test_idx]
+
+    def fit_evaluate(self) -> EvaluationResult:
+        df = self.preprocess()
+        if len(df) < 3:
+            # Dataset troppo piccolo: fallback “semplice”
+            y = df[self.target].to_numpy(dtype=float)
+            y_hat = np.repeat(np.mean(y), len(y))
+            return _metrics(y, y_hat)
+
+        X_tr, y_tr, X_te, y_te = self._split(df)
+        coef, _ = _train_linear_regression(X_tr, y_tr)
+        # Predizione su test
+        ones = np.ones((X_te.shape[0], 1), dtype=float)
+        Xb_te = np.hstack((ones, X_te))
+        y_pred = Xb_te @ coef
+        return _metrics(y_te, y_pred)
+
+
+def main() -> None:
+    # Esempio demo: y ~ 2*x1 + 0.5*x2 + rumore
+    rng = np.random.default_rng(42)
+    n = 120
+    x1 = rng.normal(0, 1, n)
+    x2 = rng.normal(0, 1, n)
+    y = 2.0 * x1 + 0.5 * x2 + rng.normal(0, 0.3, n)
+    df = pd.DataFrame({"x1": x1, "x2": x2, "y": y})
+    learner = Learner(df, target="y", features=["x1", "x2"], test_size=0.2, seed=7)
+    result = learner.fit_evaluate()
+    print(f"MAE={result.mae:.3f} | RMSE={result.rmse:.3f} | R2={result.r2:.3f}")
+
+
+if __name__ == "__main__":
+    main()

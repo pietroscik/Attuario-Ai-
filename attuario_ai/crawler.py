@@ -48,10 +48,9 @@ class RobotsPolicy:
             if response.status_code < 400 and response.text.strip():
                 self._parser.parse(response.text.splitlines())
                 self._available = True
-                self.crawl_delay = (
-                    self._parser.crawl_delay(user_agent)
-                    or self._parser.crawl_delay("*")
-                )
+                self.crawl_delay = self._parser.crawl_delay(
+                    user_agent
+                ) or self._parser.crawl_delay("*")
                 sitemaps = self._parser.site_maps() or []
                 self.sitemaps = tuple(sitemaps)
         except requests.RequestException:
@@ -146,7 +145,11 @@ class Crawler:
             error = None
         except requests.RequestException as exc:
             html = ""
-            status_code = getattr(exc.response, "status_code", 0) if hasattr(exc, "response") else 0
+            status_code = (
+                getattr(exc.response, "status_code", 0)
+                if hasattr(exc, "response")
+                else 0
+            )
             error = str(exc)
         return CrawlResult(
             url=url,
@@ -158,7 +161,9 @@ class Crawler:
         )
 
     def _extract_links(self, html: str, current_url: str) -> Set[str]:
-        from bs4 import BeautifulSoup  # lazy import to keep dependency optional for non-crawl use
+        from bs4 import (
+            BeautifulSoup,
+        )  # lazy import to keep dependency optional for non-crawl use
 
         soup = BeautifulSoup(html, "html.parser")
         links: Set[str] = set()

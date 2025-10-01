@@ -8,10 +8,27 @@ from dataclasses import dataclass
 from typing import Dict, List
 
 ACTUARIAL_TERMS = {
-    "solvency", "solvency ii", "ivass", "eiopa", "riserva", "best estimate",
-    "premio", "longevità", "mortalità", "stress test", "discount rate",
-    "best estimate", "risk margin", "scr", "bscr", "premio puro", "var",
-    "value at risk", "tasso tecnico", "attuario", "riserva matematica",
+    "solvency",
+    "solvency ii",
+    "ivass",
+    "eiopa",
+    "riserva",
+    "best estimate",
+    "premio",
+    "longevità",
+    "mortalità",
+    "stress test",
+    "discount rate",
+    "best estimate",
+    "risk margin",
+    "scr",
+    "bscr",
+    "premio puro",
+    "var",
+    "value at risk",
+    "tasso tecnico",
+    "attuario",
+    "riserva matematica",
 }
 
 FORMULA_PATTERNS = [
@@ -21,7 +38,9 @@ FORMULA_PATTERNS = [
 ]
 
 CITATION_PATTERNS = [
-    re.compile(r"\b(?:ivass|eiopa|isvap|solvency\s*ii|european insurance)\b", re.IGNORECASE),
+    re.compile(
+        r"\b(?:ivass|eiopa|isvap|solvency\s*ii|european insurance)\b", re.IGNORECASE
+    ),
     re.compile(r"\bregolament[oi]|circolare|normativa\b", re.IGNORECASE),
 ]
 
@@ -63,13 +82,18 @@ def extract_metrics(parsed_text: str, html: str) -> PageMetrics:
             actuarial_counter[term] = lower_text.count(term)
 
     numeric_tokens = len(re.findall(r"\b\d+(?:[.,]\d+)?\b", parsed_text))
-    example_values = [float(token.replace(",", ".")) for token in re.findall(r"\b\d+(?:[.,]\d+)?\b", parsed_text)[:20]]
+    example_values = [
+        float(token.replace(",", "."))
+        for token in re.findall(r"\b\d+(?:[.,]\d+)?\b", parsed_text)[:20]
+    ]
 
     has_formula = any(pattern.search(parsed_text) for pattern in FORMULA_PATTERNS)
     has_table = "<table" in html.lower()
     has_list = "<ul" in html.lower() or "<ol" in html.lower()
 
-    citation_matches = sum(pattern.findall(parsed_text).__len__() for pattern in CITATION_PATTERNS)
+    citation_matches = sum(
+        pattern.findall(parsed_text).__len__() for pattern in CITATION_PATTERNS
+    )
 
     return PageMetrics(
         word_count=word_count,

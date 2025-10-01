@@ -34,7 +34,12 @@ class EvaluationPipeline:
         weights: Optional[ScoreWeights] = None,
     ) -> None:
         self.base_url = base_url
-        self.crawler = Crawler(base_url, max_pages=max_pages, max_depth=max_depth, delay_seconds=delay_seconds)
+        self.crawler = Crawler(
+            base_url,
+            max_pages=max_pages,
+            max_depth=max_depth,
+            delay_seconds=delay_seconds,
+        )
         self.parser = PageParser()
         self.weights = weights or ScoreWeights()
 
@@ -93,7 +98,10 @@ class EvaluationPipeline:
                     "has_list": result.metrics.has_list,
                     "citation_matches": result.metrics.citation_matches,
                     "actuarial_terms": "; ".join(
-                        f"{term}:{count}" for term, count in sorted(result.metrics.actuarial_terms.items())
+                        f"{term}:{count}"
+                        for term, count in sorted(
+                            result.metrics.actuarial_terms.items()
+                        )
                     ),
                 }
                 writer.writerow(row)
@@ -113,7 +121,9 @@ class EvaluationPipeline:
             }
             for result in results
         ]
-        path.write_text(json.dumps(serializable, ensure_ascii=False, indent=2), encoding="utf-8")
+        path.write_text(
+            json.dumps(serializable, ensure_ascii=False, indent=2), encoding="utf-8"
+        )
 
     def summary(self, results: Iterable[EvaluationResult]) -> dict:
         scores = [result.score.composite for result in results]
