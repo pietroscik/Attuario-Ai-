@@ -1,9 +1,9 @@
 name: Domain Analysis
 
 on:
- schedule:
+  schedule:
     - cron: "0 6 * * *"   # tutti i giorni alle 6:00 UTC
- workflow_dispatch:       # avvio manuale da GitHub UI
+  workflow_dispatch:       # avvio manuale da GitHub UI
 
 jobs:
   analysis:
@@ -12,19 +12,19 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - uses: actions/checkout@v4
       - name: Usa Python locale
         run: python3 --version
+
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: run pipeline
-         run:|
-              PYTHONPATH=. python scripts/run_pipeline.py https://www.attuario.eu \
-              --max-pages 50 \
-              --max-depth 2 \
-              --delay 0.5 \
-              --output-dir outputs
+      - name: Run pipeline
+        run: |
+          PYTHONPATH=. python scripts/run_pipeline.py https://www.attuario.eu \
+          --max-pages 50 \
+          --max-depth 2 \
+          --delay 0.5 \
+          --output-dir outputs
 
       - name: Upload results
         uses: actions/upload-artifact@v4
