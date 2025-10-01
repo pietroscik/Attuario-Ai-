@@ -18,7 +18,11 @@ jobs:
       - name: Install dependencies
         run: |
           pip install flake8 black
-
+          
+      - name: Run Black (auto format)
+        run: |
+          black --line-length 100 attuario_ai scripts tests
+          
       - name: Run flake8
         run: flake8 attuario_ai scripts tests
 
