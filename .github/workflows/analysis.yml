@@ -8,7 +8,7 @@ on:
 jobs:
   analysis:
     runs-on: ${{ matrix.runner }}
-strategy:
+permissions:
   matrix:
     runner: [ self-hosted,ubuntu-latest]
 
