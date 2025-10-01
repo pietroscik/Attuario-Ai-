@@ -1,5 +1,8 @@
 # Attuario-Ai-
 
+[![Tests](https://github.com/pietroscik/Attuario-Ai-/actions/workflows/tests.yml/badge.svg)](https://github.com/pietroscik/Attuario-Ai-/actions/workflows/tests.yml)
+[![Lint](https://github.com/pietroscik/Attuario-Ai-/actions/workflows/lint.yml/badge.svg)](https://github.com/pietroscik/Attuario-Ai-/actions/workflows/lint.yml)# Attuario-Ai-
+
 Toolkit per valutazione automatica dei contenuti attuariali del dominio attuario.eu.
 
 ## Funzionalità principali
