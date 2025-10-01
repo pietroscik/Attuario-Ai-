@@ -1,0 +1,30 @@
+name: Lint & Pylint
+
+on:
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+jobs:
+  lint:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Python version check
+        run: python3 --version
+
+      - name: Install lint dependencies
+        run: |
+          pip install pylint flake8
+
+      - name: Run Pylint
+        run: |
+          pylint $(git ls-files '*.py') || true
+
+      - name: Run Flake8 (ignoring minor issues)
+        run: |
+          flake8 attuario_ai scripts tests --ignore=W291,E301,E501 || true
+
