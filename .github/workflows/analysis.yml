@@ -16,7 +16,10 @@ jobs:
         run: python3 --version
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: pip install pylint flake8 black
+
+      - name: Run lint
+        run: flake8 attuario_ai scripts tests --ignore=W291,E301,E501
 
       - name: Run pipeline
         run: |
