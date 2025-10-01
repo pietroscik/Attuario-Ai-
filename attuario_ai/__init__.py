@@ -1,31 +1,34 @@
-"""Attuario AI content quality assessment toolkit."""
+"""Convenient re-exports for the :mod:`attuario_ai` package."""
 
-from .crawler import Crawler, CrawlResult
+from __future__ import annotations
+
+from .crawler import CrawlResult, Crawler
+from .extraction import PageMetrics, extract_metrics
 from .parser import PageParser, ParsedPage
-from .extraction import extract_metrics
+from .pipeline import EvaluationPipeline, EvaluationResult as PipelineEvaluationResult
 from .scoring import (
-    ScoreWeights,
-    score_page,
     PageScore,
-    compute_components,
+    ScoreWeights,
     apply_weights,
+    compute_components,
+    score_page,
 )
-from .pipeline import EvaluationPipeline
-from .learning import TrainingSample, WeightLearner, samples_from_results
+from .learning import Learner, EvaluationResult as LearningEvaluationResult
 
 __all__ = [
-    "Crawler",
     "CrawlResult",
+    "Crawler",
+    "PageMetrics",
+    "extract_metrics",
     "PageParser",
     "ParsedPage",
-    "extract_metrics",
-    "ScoreWeights",
-    "score_page",
-    "PageScore",
-    "compute_components",
-    "apply_weights",
     "EvaluationPipeline",
-    "TrainingSample",
-    "WeightLearner",
-    "samples_from_results",
+    "PipelineEvaluationResult",
+    "PageScore",
+    "ScoreWeights",
+    "apply_weights",
+    "compute_components",
+    "score_page",
+    "Learner",
+    "LearningEvaluationResult",
 ]
