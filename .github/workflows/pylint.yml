@@ -1,21 +1,19 @@
 name: Pylint
 
-on: [push]
+on:
+  schedule:
+    - cron: "0 6 * * *"   # tutti i giorni alle 6:00 UTC
+  workflow_dispatch:       # avvio manuale da GitHub UI
 
 jobs:
   build:
-    runs-on: [self-hosted, ubuntu-latest]
-    strategy:
-      matrix:
-        python-version: ["3.8", "3.9", "3.10"]
-    steps:
+   runs-on: self-hosted
+   steps:
     - uses: actions/checkout@v4
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
-      with:
-        python-version: ${{ matrix.python-version }}
+    - name: Usa Python locale
+      run: python3 --version
     - name: Install dependencies
-      run: |
+       run:|
         python -m pip install --upgrade pip
         pip install pylint
     - name: Analysing the code with pylint
