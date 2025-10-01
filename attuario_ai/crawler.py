@@ -63,7 +63,10 @@ class RobotsPolicy:
 
 
 class Crawler:
-    """Breadth-first crawler restricted to a target domain that respects ``robots.txt``."""
+    """Breadth-first crawler restricted to a target domain.
+
+    The crawler respects ``robots.txt`` directives for the target domain.
+    """
 
     def __init__(
         self,
@@ -163,7 +166,9 @@ class Crawler:
     def _extract_links(self, html: str, current_url: str) -> Set[str]:
         from bs4 import (
             BeautifulSoup,
-        )  # lazy import to keep dependency optional for non-crawl use
+        )
+
+        # lazy import to keep dependency optional for non-crawl use
 
         soup = BeautifulSoup(html, "html.parser")
         links: Set[str] = set()
