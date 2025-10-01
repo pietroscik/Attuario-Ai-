@@ -1,19 +1,14 @@
 name: Domain Analysis
 
 on:
-  schedule:
+ schedule:
     - cron: "0 6 * * *"   # tutti i giorni alle 6:00 UTC
-  workflow_dispatch:       # avvio manuale da GitHub UI
+ workflow_dispatch:       # avvio manuale da GitHub UI
 
 jobs:
   analysis:
     runs-on: self-hosted
-
-
     steps:
-      - name: Install project
-          run:|
-          pip install -e .
       - name: Checkout repository
         uses: actions/checkout@v4
 
