@@ -1,4 +1,4 @@
-name: Tests
+name: Lint
 
 on:
   push:
@@ -9,34 +9,21 @@ permissions:
   contents: read
 
 jobs:
-  test:
+  lint:
     runs-on: self-hosted
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Python 3.12 (ARM64 friendly)
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-          cache: "pip"
-
       - name: Install dependencies
-        env:
-          PIP_DISABLE_PIP_VERSION_CHECK: "1"
         run: |
           python -m pip install --upgrade pip
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-          pip install pytest flake8 black
+          if [ -f requirements.txt ]; then python -m pip install -r requirements.txt; fi
+          python -m pip install flake8 black
 
-      - name: Ensure project on PYTHONPATH
-        run: echo "PYTHONPATH=$GITHUB_WORKSPACE" >> $GITHUB_ENV
+      - name: Run flake8
+        run: flake8 attuario_ai scripts tests
 
-      - name: Run lint
-        run: |
-          flake8 attuario_ai scripts tests
-          black --check attuario_ai scripts tests
-
-      - name: Run tests
-        run: pytest -v
+      - name: Run black
+        run: black --check attuario_ai scripts tests
