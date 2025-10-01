@@ -18,7 +18,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          python3 -m pip install --upgrade --quiet --no-cache-dir -r requirements.txt
+          python3 -m pip install --quiet --no-cache-dir -r requirements.txt || true
+          python3 -m pip install --quiet --no-cache-dir requests beautifulsoup4 lxml
 
 
       - name: Run pipeline
