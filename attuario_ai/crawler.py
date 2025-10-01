@@ -24,9 +24,9 @@ class CrawlResult:
     referer: Optional[str] = None
     error: Optional[str] = None
 
-
 class RobotsPolicy:
-    """Utility wrapper around ``robots.txt`` directives for the target domain."""
+    """Utility wrapper around ``robots.txt``
+ directives for the target domain."""
 
     def __init__(
         self,
@@ -42,11 +42,15 @@ class RobotsPolicy:
         self.crawl_delay: Optional[float] = None
         self.sitemaps: tuple[str, ...] = ()
 
-        robots_url = urljoin(base_url.rstrip("/"), "/robots.txt")
+        robots_url = urljoin(base_url.rstrip("/"),
+ "/robots.txt")
         try:
-            response = session.get(robots_url, timeout=timeout)
-            if response.status_code < 400 and response.text.strip():
-                self._parser.parse(response.text.splitlines())
+            response = session.get(
+robots_url, timeout=timeout)
+            if response.status_code < 400 and
+ response.text.strip():
+                self._parser.parse(
+response.text.splitlines())
                 self._available = True
                 self.crawl_delay = self._parser.crawl_delay(
                     user_agent
@@ -77,7 +81,8 @@ class Crawler:
         delay_seconds: float = 0.5,
         session: Optional[requests.Session] = None,
         timeout: float = 10.0,
-        user_agent: str = "AttuarioAI/0.1 (+https://github.com)",
+        user_agent:
+ str = "AttuarioAI/0.1 (+https://github.com)",
     ) -> None:
         self.base_url = base_url.rstrip("/")
         self.max_pages = max_pages
@@ -85,11 +90,14 @@ class Crawler:
         self.delay_seconds = delay_seconds
         self.timeout = timeout
         self._session = session or requests.Session()
-        self._session.headers.setdefault("User-Agent", user_agent)
+        self._session.headers.setdefault(
+"User-Agent", user_agent)
 
         parsed = urlparse(self.base_url)
-        if not parsed.scheme or not parsed.netloc:
-            raise ValueError(f"Invalid base_url: {base_url}")
+        if not parsed.scheme
+ or not parsed.netloc:
+            raise ValueError(
+     f"Invalid base_url: {base_url}")
         self._netloc = parsed.netloc
 
         self._robots = RobotsPolicy(
@@ -99,13 +107,16 @@ class Crawler:
             user_agent=self._session.headers["User-Agent"],
         )
         if self._robots.crawl_delay:
-            self.delay_seconds = max(self.delay_seconds, self._robots.crawl_delay)
+            self.delay_seconds = max(
+self.delay_seconds, self._robots.crawl_delay)
 
     def close(self) -> None:
         self._session.close()
 
-    def crawl(self, seeds: Optional[Iterable[str]] = None) -> Iterable[CrawlResult]:
-        queue: Deque[tuple[str, int, Optional[str]]] = deque()
+    def crawl(self, seeds:
+ Optional[Iterable[str]] = None) -> Iterable[CrawlResult]:
+        queue:
+ Deque[tuple[str, int, Optional[str]]] = deque()
         visited: Set[str] = set()
 
         if seeds is None:
@@ -132,16 +143,21 @@ class Crawler:
             if result.error or depth >= self.max_depth:
                 continue
 
-            for link in self._extract_links(result.html, normalized):
-                if link not in visited and self._robots.allows(link):
-                    queue.append((link, depth + 1, normalized))
+            for link in self._extract_links(
+result.html, normalized):
+                if link not in visited
+ and self._robots.allows(link):
+                    queue.append((
+link, depth + 1, normalized))
 
             if queue and self.delay_seconds > 0:
                 time.sleep(self.delay_seconds)
 
-    def _fetch(self, url: str, referer: Optional[str]) -> CrawlResult:
+    def _fetch(
+self, url: str, referer: Optional[str]) -> CrawlResult:
         try:
-            response: Response = self._session.get(url, timeout=self.timeout)
+            response:
+ Response = self._session.get(url, timeout=self.timeout)
             response.raise_for_status()
             html = response.text
             status_code = response.status_code
@@ -163,7 +179,8 @@ class Crawler:
             error=error,
         )
 
-    def _extract_links(self, html: str, current_url: str) -> Set[str]:
+    def _extract_links(
+self, html: str, current_url: str) -> Set[str]:
         from bs4 import (
             BeautifulSoup,
         )
@@ -178,7 +195,8 @@ class Crawler:
                 continue
             joined = urljoin(current_url, href)
             parsed = urlparse(joined)
-            if parsed.netloc == self._netloc and parsed.scheme in {"http", "https"}:
+            if parsed.netloc == self._netloc and
+ parsed.scheme in {"http", "https"}:
                 clean = self._normalize_url(joined)
                 links.add(clean)
         return links
@@ -186,7 +204,8 @@ class Crawler:
     def _normalize_url(self, url: str) -> str:
         parsed = urlparse(url)
         normalized = parsed._replace(fragment="").geturl()
-        if normalized.endswith("/") and normalized != self.base_url:
+        if normalized.endswith("/") and
+ normalized != self.base_url:
             normalized = normalized[:-1]
         return normalized
 
