@@ -1,30 +1,26 @@
-name: Lint & Pylint
+name: Lint
 
 on:
-  schedule:
-    - cron: "0 6 * * *"
-  workflow_dispatch:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
 jobs:
   lint:
-    runs-on: self-hosted
+    runs-on: ubuntu-hosted
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Python version check
-        run: python3 --version
-
-      - name: Install dependencies
+      - name: Setup Python venv
         run: |
-          python3 -m pip install --quiet --no-cache-dir -r requirements-dev.txt
+          python3 -m venv .venv
+          source .venv/bin/activate
+          pip install --no-cache-dir -r requirements-dev.txt
 
-      - name: Run Pylint
+      - name: Run lint
         run: |
-          pylint $(git ls-files '*.py') || true
-
-      - name: Run Flake8 (ignoring minor issues)
-        run: |
-          flake8 attuario_ai scripts tests --ignore=W291,E301,E501 || true
-
+          source .venv/bin/activate
+          black --check .
+          flake8 .
