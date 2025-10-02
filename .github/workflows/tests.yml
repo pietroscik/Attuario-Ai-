@@ -12,12 +12,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Usa Python locale
-        run: python3 --version
-      - name: Install dependencies
+      - name: Setup Python venv
         run: |
-          pip install -r requirements.txt
-          pip install pytest
+          python3 -m venv .venv
+          source .venv/bin/activate
+          pip install --no-cache-dir -r requirements.txt
+          pip install --no-cache-dir -r requirements-dev.txt
 
       - name: Run tests
-        run: pytest -v
+        run: |
+          source .venv/bin/activate
+          pytest -v
