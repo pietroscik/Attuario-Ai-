@@ -11,14 +11,13 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Mostra versione Python
-        run: python3 --version
-
-      # Installa solo se manca pylint
-      - name: Ensure pylint installed
+        
+      - name: Setup Python venv
         run: |
-          python3 -m pip show pylint || python3 -m pip install pylint
+          python3 -m venv .venv
+          source .venv/bin/activate
+          pip install --no-cache-dir -r requirements-dev.txt
+
 
       - name: Analisi con pylint
         run: pylint $(git ls-files '*.py')
