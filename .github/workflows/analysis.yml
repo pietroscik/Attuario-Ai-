@@ -13,22 +13,22 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Python version
-        run: python3 --version
-
-      - name: Install dependencies
+      - name: Setup Python venv
         run: |
-          python3 -m pip install --quiet --no-cache-dir -r requirements.txt || true
-          python3 -m pip install --quiet --no-cache-dir requests beautifulsoup4 lxml
-
+          python3 -m venv .venv
+          source .venv/bin/activate
+          pip install --no-cache-dir -r requirements.txt
+          pip install --no-cache-dir requests beautifulsoup4 lxml
 
       - name: Run pipeline
         run: |
+          mkdir -p outputs
+          source .venv/bin/activate
           PYTHONPATH=. python scripts/run_pipeline.py https://www.attuario.eu \
-          --max-pages 50 \
-          --max-depth 2 \
-          --delay 0.5 \
-          --output-dir outputs
+            --max-pages 50 \
+            --max-depth 2 \
+            --delay 0.5 \
+            --output-dir outputs
 
       - name: Upload results
         uses: actions/upload-artifact@v4
