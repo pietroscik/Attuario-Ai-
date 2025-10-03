@@ -26,7 +26,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install -r requirements-dev.txt
-          pip install -e .           # <-- aggiungi questo!
+          pip install -e .
 
       - name: Run tests
-        run: pytest -vname:
+        run: pytest -v
