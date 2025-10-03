@@ -11,7 +11,16 @@ from bs4 import BeautifulSoup
 
 @dataclass
 class ParsedPage:
-    """Structured representation of an HTML page."""
+    """Structured representation of an HTML page.
+
+    Attributes:
+        url: The URL of the page.
+        title: The page title extracted from the <title> tag.
+        text: Extracted plain text content from the main content area.
+        html: Original HTML content.
+        fetched_at: Datetime when the page was fetched.
+        metadata: Dictionary containing page metadata (language, description, dates, author).
+    """
 
     url: str
     title: str
@@ -22,12 +31,34 @@ class ParsedPage:
 
 
 class PageParser:
-    """Parses raw HTML into structured text and metadata."""
+    """Parses raw HTML into structured text and metadata.
+
+    This parser extracts the main content from HTML pages, extracts metadata
+    such as title, description, publication dates, and author information.
+
+    Attributes:
+        language: The expected language of the content (default: "it" for Italian).
+    """
 
     def __init__(self, *, language: str = "it") -> None:
+        """Initialize the parser.
+
+        Args:
+            language: The expected language code (default: "it").
+        """
         self.language = language
 
     def parse(self, url: str, html: str, fetched_at: float) -> ParsedPage:
+        """Parse HTML into a structured ParsedPage object.
+
+        Args:
+            url: The URL of the page being parsed.
+            html: Raw HTML content.
+            fetched_at: Unix timestamp of when the page was fetched.
+
+        Returns:
+            ParsedPage object containing extracted text and metadata.
+        """
         soup = BeautifulSoup(html, "html.parser")
         title_tag = soup.find("title")
         title = title_tag.get_text(strip=True) if title_tag else ""
@@ -54,6 +85,17 @@ class PageParser:
         )
 
     def _select_main_content(self, soup: BeautifulSoup) -> BeautifulSoup:
+        """Select the main content area from the page.
+
+        Searches for common content containers (article, main, div, body)
+        and returns the one with the most text content.
+
+        Args:
+            soup: BeautifulSoup object representing the parsed HTML.
+
+        Returns:
+            BeautifulSoup object representing the main content area.
+        """
         candidates = []
         for selector in ("article", "main", "div", "body"):
             node = soup.find(selector)
@@ -65,12 +107,30 @@ class PageParser:
         return best
 
     def _meta_content(self, soup: BeautifulSoup, name: str) -> Optional[str]:
+        """Extract content from a meta tag by name.
+
+        Args:
+            soup: BeautifulSoup object representing the parsed HTML.
+            name: The name attribute of the meta tag to find.
+
+        Returns:
+            The content attribute value, or None if not found.
+        """
         tag = soup.find("meta", attrs={"name": name})
         if tag and tag.get("content"):
             return tag["content"].strip()
         return None
 
     def _find_datetime(self, soup: BeautifulSoup, property_name: str) -> Optional[str]:
+        """Find datetime information from meta tags or time elements.
+
+        Args:
+            soup: BeautifulSoup object representing the parsed HTML.
+            property_name: The property attribute of the meta tag to search for.
+
+        Returns:
+            ISO format datetime string, or None if not found.
+        """
         tag = soup.find("meta", attrs={"property": property_name})
         if tag and tag.get("content"):
             return tag["content"].strip()

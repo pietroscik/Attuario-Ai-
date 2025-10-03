@@ -38,16 +38,28 @@ FORMULA_PATTERNS = [
 ]
 
 CITATION_PATTERNS = [
-    re.compile(
-        r"\b(?:ivass|eiopa|isvap|solvency\s*ii|european insurance)\b", re.IGNORECASE
-    ),
+    re.compile(r"\b(?:ivass|eiopa|isvap|solvency\s*ii|european insurance)\b", re.IGNORECASE),
     re.compile(r"\bregolament[oi]|circolare|normativa\b", re.IGNORECASE),
 ]
 
 
 @dataclass
 class PageMetrics:
-    """Aggregated metrics extracted from a parsed page."""
+    """Aggregated metrics extracted from a parsed page.
+
+    This class contains various metrics used to assess the quality and
+    characteristics of actuarial content on a page.
+
+    Attributes:
+        word_count: Total number of words in the page text.
+        actuarial_terms: Dictionary mapping actuarial terms to their occurrence counts.
+        numeric_tokens: Count of numeric values found in the text.
+        has_formula: Whether the page contains mathematical formulas.
+        has_table: Whether the page contains HTML tables.
+        has_list: Whether the page contains HTML lists (ordered or unordered).
+        citation_matches: Count of regulatory citations found.
+        example_values: Sample of numeric values extracted from the text (up to 20).
+    """
 
     word_count: int
     actuarial_terms: Dict[str, int]
@@ -59,6 +71,11 @@ class PageMetrics:
     example_values: List[float]
 
     def to_dict(self) -> Dict[str, object]:
+        """Convert metrics to a dictionary for serialization.
+
+        Returns:
+            Dictionary containing all metrics.
+        """
         return {
             "word_count": self.word_count,
             "actuarial_terms": self.actuarial_terms,
@@ -72,6 +89,19 @@ class PageMetrics:
 
 
 def extract_metrics(parsed_text: str, html: str) -> PageMetrics:
+    """Extract various metrics from parsed text and HTML content.
+
+    Analyzes the page content to extract metrics relevant to actuarial content
+    quality assessment, including word counts, actuarial terminology usage,
+    numeric data presence, and structural elements.
+
+    Args:
+        parsed_text: Plain text extracted from the HTML page.
+        html: Raw HTML content of the page.
+
+    Returns:
+        PageMetrics object containing all extracted metrics.
+    """
     lower_text = parsed_text.lower()
     words = re.findall(r"\b\w+\b", lower_text)
     word_count = len(words)
@@ -91,9 +121,7 @@ def extract_metrics(parsed_text: str, html: str) -> PageMetrics:
     has_table = "<table" in html.lower()
     has_list = "<ul" in html.lower() or "<ol" in html.lower()
 
-    citation_matches = sum(
-        pattern.findall(parsed_text).__len__() for pattern in CITATION_PATTERNS
-    )
+    citation_matches = sum(pattern.findall(parsed_text).__len__() for pattern in CITATION_PATTERNS)
 
     return PageMetrics(
         word_count=word_count,

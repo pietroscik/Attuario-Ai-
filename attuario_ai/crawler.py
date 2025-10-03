@@ -1,6 +1,7 @@
 """
 Simple crawler constrained to a single domain.
 """
+
 from __future__ import annotations
 
 import time
@@ -17,7 +18,16 @@ from bs4 import BeautifulSoup  # import moved to top for efficiency
 
 @dataclass
 class CrawlResult:
-    """Represents a crawled page."""
+    """Represents a crawled page.
+
+    Attributes:
+        url: The URL of the crawled page.
+        status_code: HTTP status code of the response.
+        html: Raw HTML content of the page.
+        fetched_at: Timestamp when the page was fetched.
+        referer: The referring URL (optional).
+        error: Error message if the fetch failed (optional).
+    """
 
     url: str
     status_code: int
@@ -28,7 +38,11 @@ class CrawlResult:
 
 
 class RobotsPolicy:
-    """Utility wrapper around ``robots.txt`` directives for the target domain."""
+    """Utility wrapper around ``robots.txt`` directives for the target domain.
+
+    This class fetches and parses the robots.txt file for a domain to determine
+    which URLs can be crawled and what crawl delays should be respected.
+    """
 
     def __init__(
         self,
@@ -38,6 +52,14 @@ class RobotsPolicy:
         timeout: float,
         user_agent: str,
     ) -> None:
+        """Initialize the RobotsPolicy.
+
+        Args:
+            base_url: The base URL of the domain.
+            session: Requests session to use for fetching robots.txt.
+            timeout: Timeout for HTTP requests in seconds.
+            user_agent: User-Agent string to identify the crawler.
+        """
         self.user_agent = user_agent
         self._parser = robotparser.RobotFileParser()
         self._available = False
@@ -50,9 +72,8 @@ class RobotsPolicy:
             if response.status_code < 400 and response.text.strip():
                 self._parser.parse(response.text.splitlines())
                 self._available = True
-                self.crawl_delay = (
-                    self._parser.crawl_delay(user_agent)
-                    or self._parser.crawl_delay("*")
+                self.crawl_delay = self._parser.crawl_delay(user_agent) or self._parser.crawl_delay(
+                    "*"
                 )
                 sitemaps = self._parser.site_maps() or []
                 self.sitemaps = tuple(sitemaps)
@@ -60,16 +81,34 @@ class RobotsPolicy:
             self._available = False
 
     def is_allowed(self, url: str) -> bool:
+        """Check if the given URL is allowed to be crawled.
+
+        Args:
+            url: The URL to check.
+
+        Returns:
+            True if the URL can be crawled, False otherwise.
+        """
         if not self._available:
             return True
         return self._parser.can_fetch(self.user_agent, url)
 
 
 class Crawler:
+    """Breadth-first crawler restricted to a target domain that respects robots.txt.
+
+    This crawler performs a breadth-first search (BFS) traversal of web pages
+    starting from a base URL, staying within the same domain. It respects
+    robots.txt directives and implements polite crawling with configurable delays.
+
+    Attributes:
+        base_url: The starting URL for the crawl.
+        max_pages: Maximum number of pages to crawl.
+        max_depth: Maximum link depth from the starting URL.
+        delay_seconds: Delay between requests in seconds.
+        timeout: Timeout for HTTP requests in seconds.
     """
-    Breadth-first crawler restricted to a 
-    target domain that respects ``robots.txt``.
-    """
+
     def __init__(
         self,
         base_url: str,
@@ -91,8 +130,8 @@ class Crawler:
             delay_seconds (float, optional): Delay between requests in seconds. Defaults to 0.5.
             session (requests.Session, optional): Custom requests session. Defaults to None.
             timeout (float, optional): Timeout for HTTP requests in seconds. Defaults to 10.0.
-            user_agent (str, optional): The User-Agent string sent with HTTP requests. 
-                This identifies the crawler to web servers and is used for robots.txt compliance. 
+            user_agent (str, optional): The User-Agent string sent with HTTP requests.
+                This identifies the crawler to web servers and is used for robots.txt compliance.
                 Defaults to "AttuarioAI/0.1 (+https://github.com)".
         """
         self.base_url = base_url.rstrip("/")
@@ -116,13 +155,24 @@ class Crawler:
         )
         if self._robots.crawl_delay:
             self.delay_seconds = max(self.delay_seconds, self._robots.crawl_delay)
+
             def allows(self, url: str) -> bool:
                 """Check if crawling the given URL is allowed by robots.txt."""
                 return self._robots.is_allowed(url)
+
     def close(self) -> None:
+        """Close the HTTP session and release resources."""
         self._session.close()
 
     def crawl(self, seeds: Optional[Iterable[str]] = None) -> Iterable[CrawlResult]:
+        """Perform breadth-first crawl starting from seed URLs.
+
+        Args:
+            seeds: Optional list of seed URLs to start from. If None, uses base_url.
+
+        Yields:
+            CrawlResult objects for each successfully fetched page.
+        """
         queue: Deque[tuple[str, int, Optional[str]]] = deque()
         visited: Set[str] = set()
         if seeds is None:
@@ -151,6 +201,15 @@ class Crawler:
                     queue.append((link, depth + 1, normalized))
 
     def _fetch(self, url: str, referer: Optional[str]) -> CrawlResult:
+        """Fetch a single URL and return the result.
+
+        Args:
+            url: The URL to fetch.
+            referer: The referring URL (optional).
+
+        Returns:
+            CrawlResult containing the fetched page or error information.
+        """
         try:
             response: Response = self._session.get(url, timeout=self.timeout)
             response.raise_for_status()
@@ -159,7 +218,9 @@ class Crawler:
             error = None
         except requests.RequestException as exc:
             html = ""
-            status_code = exc.response.status_code if getattr(exc, "response", None) is not None else None
+            status_code = (
+                exc.response.status_code if getattr(exc, "response", None) is not None else None
+            )
             error = str(exc)
         return CrawlResult(
             url=url,
@@ -171,6 +232,15 @@ class Crawler:
         )
 
     def _extract_links(self, html: str, current_url: str) -> Set[str]:
+        """Extract all valid links from an HTML page.
+
+        Args:
+            html: The HTML content to parse.
+            current_url: The URL of the current page (for resolving relative links).
+
+        Returns:
+            Set of normalized absolute URLs found on the page.
+        """
         soup = BeautifulSoup(html, "html.parser")
         links: Set[str] = set()
         for tag in soup.find_all("a", href=True):
@@ -185,12 +255,21 @@ class Crawler:
         return links
 
     def _normalize_url(self, url: str) -> str:
+        """Normalize a URL by removing fragments and trailing slashes.
+
+        Args:
+            url: The URL to normalize.
+
+        Returns:
+            Normalized URL string.
+        """
         parsed = urlparse(url)
         normalized = parsed._replace(fragment="").geturl()
         # Remove trailing slash except for root path
         if normalized.endswith("/") and normalized != f"{parsed.scheme}://{parsed.netloc}/":
             normalized = normalized[:-1]
         return normalized
+
     def __enter__(self) -> "Crawler":
         return self
 

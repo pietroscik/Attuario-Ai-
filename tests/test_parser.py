@@ -15,7 +15,7 @@ class TestPageParser:
         """Test parser initializes with correct language."""
         parser = PageParser(language="it")
         assert parser.language == "it"
-        
+
         parser_en = PageParser(language="en")
         assert parser_en.language == "en"
 
@@ -35,9 +35,9 @@ class TestPageParser:
         """
         url = "https://example.com/test"
         fetched_at = time.time()
-        
+
         result = parser.parse(url, html, fetched_at)
-        
+
         assert isinstance(result, ParsedPage)
         assert result.url == url
         assert result.title == "Test Page"
@@ -66,9 +66,9 @@ class TestPageParser:
         """
         url = "https://example.com/article"
         fetched_at = time.time()
-        
+
         result = parser.parse(url, html, fetched_at)
-        
+
         assert result.metadata["description"] == "Test description"
         assert result.metadata["author"] == "Test Author"
         assert result.metadata["published"] == "2023-01-15T10:00:00Z"
@@ -86,9 +86,9 @@ class TestPageParser:
         """
         url = "https://example.com/simple"
         fetched_at = time.time()
-        
+
         result = parser.parse(url, html, fetched_at)
-        
+
         assert result.metadata["description"] is None
         assert result.metadata["author"] is None
         assert result.metadata["published"] is None
@@ -105,9 +105,9 @@ class TestPageParser:
         """
         url = "https://example.com/notitle"
         fetched_at = time.time()
-        
+
         result = parser.parse(url, html, fetched_at)
-        
+
         assert result.title == ""
 
     def test_select_main_content_article(self):
@@ -128,9 +128,9 @@ class TestPageParser:
         """
         url = "https://example.com/test"
         fetched_at = time.time()
-        
+
         result = parser.parse(url, html, fetched_at)
-        
+
         # Should contain the main article content
         assert "Main article content" in result.text
         assert "substantial text" in result.text
@@ -152,9 +152,9 @@ class TestPageParser:
         """
         url = "https://attuario.eu/solvency"
         fetched_at = time.time()
-        
+
         result = parser.parse(url, html, fetched_at)
-        
+
         assert result.title == "Solvency II Analysis"
         assert "Riserva Matematica" in result.text
         assert "Best Estimate" in result.text
@@ -173,9 +173,9 @@ class TestPageParser:
         """
         url = "https://example.com/test"
         fetched_at = time.time()
-        
+
         result = parser.parse(url, html, fetched_at)
-        
+
         # Should find time tag datetime if no meta property
         assert result.metadata["published"] == "2023-12-01T12:00:00Z"
 
@@ -185,7 +185,7 @@ class TestPageParser:
         html = "<html><body><p>Test</p></body></html>"
         url = "https://example.com/test"
         fetched_at = time.time()
-        
+
         result = parser.parse(url, html, fetched_at)
-        
+
         assert result.html == html
