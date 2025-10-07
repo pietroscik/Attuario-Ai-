@@ -44,7 +44,11 @@ class TestScoreWeights:
     def test_normalize_weights(self):
         """Test weight normalization."""
         weights = ScoreWeights(
-            accuracy=2.0, transparency=1.0, completeness=1.0, freshness=0.5, clarity=0.5
+            accuracy=2.0,
+            transparency=1.0,
+            completeness=1.0,
+            freshness=0.5,
+            clarity=0.5
         )
 
         normalized = weights.normalize()
@@ -62,7 +66,11 @@ class TestScoreWeights:
     def test_normalize_zero_weights_raises_error(self):
         """Test that normalizing zero weights raises ValueError."""
         weights = ScoreWeights(
-            accuracy=0.0, transparency=0.0, completeness=0.0, freshness=0.0, clarity=0.0
+            accuracy=0.0,
+            transparency=0.0,
+            completeness=0.0,
+            freshness=0.0,
+            clarity=0.0
         )
 
         with pytest.raises(ValueError, match="Weights sum to zero"):
@@ -343,7 +351,11 @@ class TestApplyWeights:
             "clarity": 0.0,
         }
         weights = ScoreWeights(
-            accuracy=1.0, transparency=0.0, completeness=0.0, freshness=0.0, clarity=0.0
+            accuracy=1.0,
+            transparency=0.0,
+            completeness=0.0, 
+            freshness=0.0, 
+            clarity=0.0
         )
 
         score = apply_weights(components, weights)
