@@ -4,6 +4,7 @@ Simple crawler constrained to a single domain.
 
 from __future__ import annotations
 
+import logging
 import time
 from collections import deque
 from dataclasses import dataclass
@@ -14,6 +15,8 @@ from urllib import robotparser
 import requests
 from requests import Response
 from bs4 import BeautifulSoup  # import moved to top for efficiency
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -72,13 +75,17 @@ class RobotsPolicy:
             if response.status_code < 400 and response.text.strip():
                 self._parser.parse(response.text.splitlines())
                 self._available = True
-                self.crawl_delay = self._parser.crawl_delay(user_agent) or self._parser.crawl_delay(
-                    "*"
-                )
+                self.crawl_delay = self._parser.crawl_delay(
+                    user_agent
+                ) or self._parser.crawl_delay("*")
                 sitemaps = self._parser.site_maps() or []
                 self.sitemaps = tuple(sitemaps)
-        except requests.RequestException:
+                logger.info(f"Successfully fetched robots.txt from {robots_url}")
+                if self.crawl_delay:
+                    logger.info(f"Crawl delay from robots.txt: {self.crawl_delay}s")
+        except requests.RequestException as exc:
             self._available = False
+            logger.warning(f"Failed to fetch robots.txt from {robots_url}: {exc}")
 
     def is_allowed(self, url: str) -> bool:
         """Check if the given URL is allowed to be crawled.
@@ -147,6 +154,11 @@ class Crawler:
             raise ValueError(f"Invalid base_url: {base_url}")
         self._netloc = parsed.netloc
 
+        logger.info(f"Initializing crawler for {self.base_url}")
+        logger.info(
+            f"Config: max_pages={max_pages}, max_depth={max_depth}, delay={delay_seconds}s"
+        )
+
         self._robots = RobotsPolicy(
             self.base_url,
             session=self._session,
@@ -155,6 +167,7 @@ class Crawler:
         )
         if self._robots.crawl_delay:
             self.delay_seconds = max(self.delay_seconds, self._robots.crawl_delay)
+            logger.info(f"Adjusted delay to {self.delay_seconds}s based on robots.txt")
 
             def allows(self, url: str) -> bool:
                 """Check if crawling the given URL is allowed by robots.txt."""
@@ -173,6 +186,7 @@ class Crawler:
         Yields:
             CrawlResult objects for each successfully fetched page.
         """
+        logger.info("Starting crawl")
         queue: Deque[tuple[str, int, Optional[str]]] = deque()
         visited: Set[str] = set()
         if seeds is None:
@@ -187,11 +201,19 @@ class Crawler:
             url, depth, referer = queue.popleft()
             normalized = self._normalize_url(url)
             if not self._robots.is_allowed(normalized):
+                logger.info(f"URL disallowed by robots.txt: {normalized}")
                 continue
             visited.add(normalized)
             result = self._fetch(normalized, referer)
             yield result
             pages_crawled += 1
+
+            if result.error:
+                logger.warning(f"Error fetching {normalized}: {result.error}")
+            else:
+                logger.info(
+                    f"Successfully crawled [{pages_crawled}/{self.max_pages}]: {normalized}"
+                )
 
             if result.error or depth >= self.max_depth:
                 continue
@@ -199,6 +221,8 @@ class Crawler:
             for link in self._extract_links(result.html, normalized):
                 if link not in visited and self._robots.is_allowed(link):
                     queue.append((link, depth + 1, normalized))
+
+        logger.info(f"Crawl completed. Total pages crawled: {pages_crawled}")
 
     def _fetch(self, url: str, referer: Optional[str]) -> CrawlResult:
         """Fetch a single URL and return the result.
@@ -210,18 +234,73 @@ class Crawler:
         Returns:
             CrawlResult containing the fetched page or error information.
         """
-        try:
-            response: Response = self._session.get(url, timeout=self.timeout)
-            response.raise_for_status()
-            html = response.text
-            status_code = response.status_code
-            error = None
-        except requests.RequestException as exc:
-            html = ""
-            status_code = (
-                exc.response.status_code if getattr(exc, "response", None) is not None else None
-            )
-            error = str(exc)
+        max_retries = 3
+        retry_delay = 1.0  # Initial retry delay in seconds
+
+        for attempt in range(max_retries):
+            try:
+                if attempt > 0:
+                    wait_time = retry_delay * (2 ** (attempt - 1))
+                    logger.info(
+                        f"Retry attempt {attempt + 1}/{max_retries} for {url} after {wait_time}s"
+                    )
+                    time.sleep(wait_time)
+
+                response: Response = self._session.get(url, timeout=self.timeout)
+                response.raise_for_status()
+                html = response.text
+                status_code = response.status_code
+                error = None
+
+                if attempt > 0:
+                    logger.info(
+                        f"Successfully fetched {url} on retry attempt {attempt + 1}"
+                    )
+
+                time.sleep(self.delay_seconds)
+                break
+            except requests.Timeout as exc:
+                html = ""
+                status_code = None
+                error = f"Timeout: {exc}"
+                logger.warning(
+                    f"Timeout fetching {url} (attempt {attempt + 1}/{max_retries})"
+                )
+                if attempt == max_retries - 1:
+                    logger.error(
+                        f"Failed to fetch {url} after {max_retries} attempts: {error}"
+                    )
+            except requests.ConnectionError as exc:
+                html = ""
+                status_code = None
+                error = f"Connection error: {exc}"
+                logger.warning(
+                    f"Connection error fetching {url} (attempt {attempt + 1}/{max_retries})"
+                )
+                if attempt == max_retries - 1:
+                    logger.error(
+                        f"Failed to fetch {url} after {max_retries} attempts: {error}"
+                    )
+            except requests.HTTPError as exc:
+                html = ""
+                status_code = exc.response.status_code if exc.response else None
+                error = f"HTTP {status_code}: {exc}"
+                logger.error(f"HTTP error fetching {url}: {error}")
+                break  # Don't retry on HTTP errors (4xx, 5xx)
+            except requests.RequestException as exc:
+                html = ""
+                status_code = (
+                    exc.response.status_code
+                    if getattr(exc, "response", None) is not None
+                    else None
+                )
+                error = str(exc)
+                logger.error(f"Request error fetching {url}: {error}")
+                if attempt == max_retries - 1:
+                    logger.error(
+                        f"Failed to fetch {url} after {max_retries} attempts: {error}"
+                    )
+
         return CrawlResult(
             url=url,
             status_code=status_code,
@@ -266,7 +345,10 @@ class Crawler:
         parsed = urlparse(url)
         normalized = parsed._replace(fragment="").geturl()
         # Remove trailing slash except for root path
-        if normalized.endswith("/") and normalized != f"{parsed.scheme}://{parsed.netloc}/":
+        if (
+            normalized.endswith("/")
+            and normalized != f"{parsed.scheme}://{parsed.netloc}/"
+        ):
             normalized = normalized[:-1]
         return normalized
 

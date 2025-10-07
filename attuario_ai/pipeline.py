@@ -144,7 +144,9 @@ class EvaluationPipeline:
                     "citation_matches": result.metrics.citation_matches,
                     "actuarial_terms": "; ".join(
                         f"{term}:{count}"
-                        for term, count in sorted(result.metrics.actuarial_terms.items())
+                        for term, count in sorted(
+                            result.metrics.actuarial_terms.items()
+                        )
                     ),
                 }
                 writer.writerow(row)
@@ -170,7 +172,9 @@ class EvaluationPipeline:
             }
             for result in results
         ]
-        path.write_text(json.dumps(serializable, ensure_ascii=False, indent=2), encoding="utf-8")
+        path.write_text(
+            json.dumps(serializable, ensure_ascii=False, indent=2), encoding="utf-8"
+        )
 
     def summary(self, results: Iterable[EvaluationResult]) -> dict:
         """Generate summary statistics from evaluation results.

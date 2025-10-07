@@ -38,7 +38,9 @@ FORMULA_PATTERNS = [
 ]
 
 CITATION_PATTERNS = [
-    re.compile(r"\b(?:ivass|eiopa|isvap|solvency\s*ii|european insurance)\b", re.IGNORECASE),
+    re.compile(
+        r"\b(?:ivass|eiopa|isvap|solvency\s*ii|european insurance)\b", re.IGNORECASE
+    ),
     re.compile(r"\bregolament[oi]|circolare|normativa\b", re.IGNORECASE),
 ]
 
@@ -121,7 +123,9 @@ def extract_metrics(parsed_text: str, html: str) -> PageMetrics:
     has_table = "<table" in html.lower()
     has_list = "<ul" in html.lower() or "<ol" in html.lower()
 
-    citation_matches = sum(pattern.findall(parsed_text).__len__() for pattern in CITATION_PATTERNS)
+    citation_matches = sum(
+        pattern.findall(parsed_text).__len__() for pattern in CITATION_PATTERNS
+    )
 
     return PageMetrics(
         word_count=word_count,
