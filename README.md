@@ -12,6 +12,7 @@ Toolkit per valutazione automatica dei contenuti attuariali del dominio attuario
 - **Estrazione metriche** attuariali (terminologia, numeri, formule, citazioni normative).
 - **Scoring** composito secondo i pesi del framework attuariale proposto (accuratezza, trasparenza, completezza, aggiornamento, chiarezza) con possibilità di calibrazione dai feedback umani.
 - **Reportistica** in formato CSV e JSON con riepilogo sintetico delle performance del dominio.
+- **Logging e robustezza** con retry automatico per errori di rete e log dettagliati su console e file.
 
 ## Requisiti
 
@@ -35,6 +36,26 @@ Il comando genera:
 - `outputs/report.csv`: riepilogo tabellare pagina per pagina.
 - `outputs/report.json`: versione JSON con metriche dettagliate.
 - `outputs/summary.json`: statistiche aggregate (numero pagine, punteggio medio/min/max).
+- `logs/pipeline.log`: log dettagliati dell'esecuzione (timestamp, errori, retry).
+
+### Logging e robustezza
+
+Il sistema include logging completo e gestione robusta degli errori di rete:
+
+```bash
+# Logging automatico (console + file logs/pipeline.log)
+python scripts/run_pipeline.py https://www.attuario.eu --max-pages 50
+
+# Specifica file di log custom
+python scripts/run_pipeline.py https://www.attuario.eu --log-file mylogs/custom.log
+```
+
+**Funzionalità:**
+- **Livelli di log**: INFO (progresso), WARNING (problemi non critici), ERROR (errori gravi)
+- **Retry automatico**: 3 tentativi con backoff esponenziale per errori di timeout e connessione
+- **Dual output**: console (formato semplice) e file (formato dettagliato con timestamp)
+
+Vedi [docs/LOGGING.md](docs/LOGGING.md) per dettagli ed esempi.
 
 ### Calibrazione dei pesi con feedback umano
 

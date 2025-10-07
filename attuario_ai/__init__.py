@@ -14,6 +14,7 @@ from .scoring import (
     score_page,
 )
 from .learning import Learner, EvaluationResult as LearningEvaluationResult
+from .logging_config import setup_logging
 
 __all__ = [
     "CrawlResult",
@@ -31,4 +32,5 @@ __all__ = [
     "score_page",
     "Learner",
     "LearningEvaluationResult",
+    "setup_logging",
 ]

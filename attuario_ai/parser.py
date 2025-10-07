@@ -3,10 +3,13 @@
 from __future__ import annotations
 
 import datetime as dt
+import logging
 from dataclasses import dataclass
 from typing import Dict, Optional
 
 from bs4 import BeautifulSoup
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -59,30 +62,44 @@ class PageParser:
         Returns:
             ParsedPage object containing extracted text and metadata.
         """
-        soup = BeautifulSoup(html, "html.parser")
-        title_tag = soup.find("title")
-        title = title_tag.get_text(strip=True) if title_tag else ""
+        logger.info(f"Parsing page: {url}")
 
-        main = self._select_main_content(soup)
-        text = main.get_text("\n", strip=True)
+        try:
+            soup = BeautifulSoup(html, "html.parser")
+            title_tag = soup.find("title")
+            title = title_tag.get_text(strip=True) if title_tag else ""
 
-        metadata = {
-            "language": self.language,
-            "title": title,
-            "description": self._meta_content(soup, "description"),
-            "published": self._find_datetime(soup, "article:published_time"),
-            "modified": self._find_datetime(soup, "article:modified_time"),
-            "author": self._meta_content(soup, "author"),
-        }
+            if not title:
+                logger.warning(f"No title found for page: {url}")
 
-        return ParsedPage(
-            url=url,
-            title=title,
-            text=text,
-            html=html,
-            fetched_at=dt.datetime.fromtimestamp(fetched_at, tz=dt.timezone.utc),
-            metadata=metadata,
-        )
+            main = self._select_main_content(soup)
+            text = main.get_text("\n", strip=True)
+
+            if not text:
+                logger.warning(f"No text content found for page: {url}")
+
+            metadata = {
+                "language": self.language,
+                "title": title,
+                "description": self._meta_content(soup, "description"),
+                "published": self._find_datetime(soup, "article:published_time"),
+                "modified": self._find_datetime(soup, "article:modified_time"),
+                "author": self._meta_content(soup, "author"),
+            }
+
+            logger.info(f"Successfully parsed page: {url} (title: {title[:50]}...)")
+
+            return ParsedPage(
+                url=url,
+                title=title,
+                text=text,
+                html=html,
+                fetched_at=dt.datetime.fromtimestamp(fetched_at, tz=dt.timezone.utc),
+                metadata=metadata,
+            )
+        except Exception as exc:
+            logger.error(f"Error parsing page {url}: {exc}")
+            raise
 
     def _select_main_content(self, soup: BeautifulSoup) -> BeautifulSoup:
         """Select the main content area from the page.

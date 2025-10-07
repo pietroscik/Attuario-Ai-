@@ -7,11 +7,13 @@ import argparse
 import json
 from pathlib import Path
 
-from attuario_ai import EvaluationPipeline, ScoreWeights
+from attuario_ai import EvaluationPipeline, ScoreWeights, setup_logging
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Evaluate actuarial content quality for a domain.")
+    parser = argparse.ArgumentParser(
+        description="Evaluate actuarial content quality for a domain."
+    )
     parser.add_argument(
         "base_url", help="Starting URL for the crawl (e.g. https://www.example.com)"
     )
@@ -33,11 +35,21 @@ def parse_args() -> argparse.Namespace:
         type=Path,
         help="Optional JSON file containing custom score weights",
     )
+    parser.add_argument(
+        "--log-file",
+        type=Path,
+        default=Path("logs/pipeline.log"),
+        help="Path to log file (default: logs/pipeline.log)",
+    )
     return parser.parse_args()
 
 
 def main() -> None:
     args = parse_args()
+
+    # Setup logging
+    setup_logging(log_file=str(args.log_file))
+
     output_dir: Path = args.output_dir
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -59,7 +71,9 @@ def main() -> None:
         summary = pipeline.summary(results)
 
     summary_path = output_dir / "summary.json"
-    summary_path.write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")
+    summary_path.write_text(
+        json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8"
+    )
     print(json.dumps(summary, indent=2, ensure_ascii=False))
 
 

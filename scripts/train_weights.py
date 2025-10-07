@@ -13,8 +13,12 @@ from attuario_ai.learning import WeightLearner, normalize_url, samples_from_resu
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Learn score weights from labelled pages.")
-    parser.add_argument("base_url", help="Base domain for crawling (e.g. https://www.attuario.eu)")
+    parser = argparse.ArgumentParser(
+        description="Learn score weights from labelled pages."
+    )
+    parser.add_argument(
+        "base_url", help="Base domain for crawling (e.g. https://www.attuario.eu)"
+    )
     parser.add_argument(
         "labels", type=Path, help="JSON file with [{'url': str, 'target_score': float}]"
     )
