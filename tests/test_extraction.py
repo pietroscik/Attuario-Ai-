@@ -1,14 +1,6 @@
 """Unit tests for extraction.py module."""
 
-import pytest
-
-from attuario_ai.extraction import (
-    ACTUARIAL_TERMS,
-    CITATION_PATTERNS,
-    FORMULA_PATTERNS,
-    PageMetrics,
-    extract_metrics,
-)
+from attuario_ai.extraction import PageMetrics, extract_metrics
 
 
 class TestExtractMetrics:
@@ -178,22 +170,23 @@ class TestExtractMetrics:
         """Test extraction from comprehensive actuarial document."""
         text = """
         Analisi Solvency II per IVASS
-        
+
         Il Best Estimate della riserva matematica è calcolato utilizzando il tasso tecnico.
         Il premio puro è 5000 EUR con un risk margin di 500 EUR.
-        
+
         Calcolo SCR:
         - BSCR base: 10000
         - Stress test applicato: 1.5
         - Value at Risk (VaR) al 99.5%
-        
+
         Riferimenti normativi: EIOPA guidelines, circolare IVASS n. 23/2020.
         """
         html = """
         <html><body>
             <article>
                 <h1>Analisi Solvency II per IVASS</h1>
-                <p>Il Best Estimate della riserva matematica è calcolato utilizzando il tasso tecnico.</p>
+                <p>Il Best Estimate della riserva matematica è calcolato
+                utilizzando il tasso tecnico.</p>
                 <p>Il premio puro è 5000 EUR con un risk margin di 500 EUR.</p>
                 <table>
                     <tr><th>Metric</th><th>Value</th></tr>
@@ -203,7 +196,8 @@ class TestExtractMetrics:
                     <li>Stress test applicato: 1.5</li>
                     <li>Value at Risk (VaR) al 99.5%</li>
                 </ul>
-                <p>Riferimenti normativi: EIOPA guidelines, circolare IVASS n. 23/2020.</p>
+                <p>Riferimenti normativi: EIOPA guidelines,
+                circolare IVASS n. 23/2020.</p>
             </article>
         </body></html>
         """

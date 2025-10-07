@@ -3,8 +3,6 @@
 import time
 from datetime import datetime, timezone
 
-import pytest
-
 from attuario_ai.parser import PageParser, ParsedPage
 
 
@@ -118,8 +116,8 @@ class TestPageParser:
             <body>
                 <header>Header</header>
                 <article>
-                    Main article content with substantial text to make it 
-                    the largest element. This should be selected as the main 
+                    Main article content with substantial text to make it
+                    the largest element. This should be selected as the main
                     content area since it contains the most text.
                 </article>
                 <footer>Footer</footer>

@@ -194,6 +194,66 @@ print(f"Components: {score.components}")
 - Il rispetto di `robots.txt` dipende dalle direttive pubblicate dal sito (crawl-delay e permessi).
 - La verifica numerica è basata su presenze di valori e formule, non sulla correttezza dei calcoli.
 
+## Sviluppo
+
+### Requisiti per lo sviluppo
+
+Per contribuire al progetto, installa le dipendenze di sviluppo:
+
+```bash
+pip install -r requirements-dev.txt
+```
+
+### Code Style e Linting
+
+Il progetto utilizza **black** per la formattazione del codice e **flake8** per il linting.
+
+**Formattazione con black:**
+```bash
+black --line-length 100 .
+```
+
+**Verifica formattazione:**
+```bash
+black --check --line-length 100 .
+```
+
+**Linting con flake8:**
+```bash
+flake8 . --max-line-length=100 --count --statistics
+```
+
+### Pre-commit Hooks
+
+Per garantire che il codice sia sempre formattato correttamente prima di ogni commit, puoi utilizzare pre-commit hooks:
+
+```bash
+# Installa pre-commit
+pip install pre-commit
+
+# Installa gli hooks
+pre-commit install
+
+# Esegui manualmente su tutti i file
+pre-commit run --all-files
+```
+
+Gli hooks configurati eseguiranno automaticamente:
+- Formattazione con black
+- Linting con flake8
+- Rimozione whitespace trailing
+- Controllo file YAML
+- Controllo merge conflicts
+
+### GitHub Actions
+
+Il progetto include workflow automatici per:
+
+- **Tests** (`.github/workflows/tests.yml`): Esegue tutti i test su ogni push e PR
+- **Lint** (`.github/workflows/lint.yml`): Verifica formattazione e linting su ogni push e PR
+
+I workflow di linting bloccano il merge di PR con problemi di formattazione o linting.
+
 ## Prossimi passi suggeriti
 
 - Integrare unit test numerici sui valori estratti dal testo.
