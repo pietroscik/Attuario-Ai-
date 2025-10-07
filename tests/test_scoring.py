@@ -30,7 +30,11 @@ class TestScoreWeights:
     def test_custom_weights(self):
         """Test custom weight values."""
         weights = ScoreWeights(
-            accuracy=0.5, transparency=0.3, completeness=0.1, freshness=0.05, clarity=0.05
+            accuracy=0.5,
+            transparency=0.3,
+            completeness=0.1,
+            freshness=0.05,
+            clarity=0.05,
         )
 
         assert weights.accuracy == 0.5
@@ -237,8 +241,12 @@ class TestComputeComponents:
 
     def test_freshness_score_recent_date(self):
         """Test freshness score for recent content."""
-        recent_date = (dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=30)).isoformat()
-        old_date = (dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=400)).isoformat()
+        recent_date = (
+            dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=30)
+        ).isoformat()
+        old_date = (
+            dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=400)
+        ).isoformat()
 
         metrics = PageMetrics(
             word_count=100,
@@ -351,7 +359,13 @@ class TestScorePage:
         """Test scoring an excellent actuarial page."""
         metrics = PageMetrics(
             word_count=500,
-            actuarial_terms={"solvency": 3, "ivass": 2, "best estimate": 2, "scr": 1, "bscr": 1},
+            actuarial_terms={
+                "solvency": 3,
+                "ivass": 2,
+                "best estimate": 2,
+                "scr": 1,
+                "bscr": 1,
+            },
             numeric_tokens=50,
             has_formula=True,
             has_table=True,
@@ -359,7 +373,9 @@ class TestScorePage:
             citation_matches=4,
             example_values=[1000.0, 2000.0, 3000.0],
         )
-        recent_date = (dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=30)).isoformat()
+        recent_date = (
+            dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=30)
+        ).isoformat()
         metadata = {"url": "https://attuario.eu/analysis", "published": recent_date}
         weights = ScoreWeights()
 
@@ -479,7 +495,9 @@ class TestScorePage:
             citation_matches=6,
             example_values=[1000.0, 2500.0, 3700.5, 10000.0],
         )
-        recent_date = (dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=15)).isoformat()
+        recent_date = (
+            dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=15)
+        ).isoformat()
         metadata = {
             "url": "https://attuario.eu/solvency-analysis",
             "title": "Comprehensive Solvency II Analysis",
