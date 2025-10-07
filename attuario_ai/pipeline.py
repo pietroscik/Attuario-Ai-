@@ -16,13 +16,35 @@ from .scoring import PageScore, ScoreWeights, score_page
 
 @dataclass
 class EvaluationResult:
+    """Results from evaluating a single page.
+
+    Attributes:
+        page: ParsedPage object containing the page content and metadata.
+        metrics: PageMetrics object containing extracted features.
+        score: PageScore object containing the quality assessment.
+    """
+
     page: ParsedPage
     metrics: PageMetrics
     score: PageScore
 
 
 class EvaluationPipeline:
-    """End-to-end pipeline that crawls, parses and scores pages."""
+    """End-to-end pipeline that crawls, parses and scores pages.
+
+    This pipeline orchestrates the entire evaluation workflow by:
+    1. Crawling pages from a domain
+    2. Parsing HTML into structured content
+    3. Extracting relevant metrics
+    4. Calculating quality scores
+    5. Generating reports in various formats
+
+    Attributes:
+        base_url: The starting URL for crawling.
+        crawler: Crawler instance for fetching pages.
+        parser: PageParser instance for parsing HTML.
+        weights: ScoreWeights for calculating composite scores.
+    """
 
     def __init__(
         self,
@@ -33,6 +55,15 @@ class EvaluationPipeline:
         delay_seconds: float = 0.2,
         weights: Optional[ScoreWeights] = None,
     ) -> None:
+        """Initialize the evaluation pipeline.
+
+        Args:
+            base_url: Starting URL for the crawl.
+            max_pages: Maximum number of pages to crawl (default: 25).
+            max_depth: Maximum link depth from start URL (default: 1).
+            delay_seconds: Delay between requests in seconds (default: 0.2).
+            weights: Optional custom ScoreWeights for scoring.
+        """
         self.base_url = base_url
         self.crawler = Crawler(
             base_url,
@@ -44,6 +75,14 @@ class EvaluationPipeline:
         self.weights = weights or ScoreWeights()
 
     def run(self, seeds: Optional[Iterable[str]] = None) -> List[EvaluationResult]:
+        """Run the complete evaluation pipeline.
+
+        Args:
+            seeds: Optional list of seed URLs to start from. If None, uses base_url.
+
+        Returns:
+            List of EvaluationResult objects for each successfully evaluated page.
+        """
         results: List[EvaluationResult] = []
         for crawled in self.crawler.crawl(seeds=seeds):
             if crawled.error or not crawled.html:
@@ -56,6 +95,12 @@ class EvaluationPipeline:
         return results
 
     def export_csv(self, results: Iterable[EvaluationResult], path: Path) -> None:
+        """Export evaluation results to a CSV file.
+
+        Args:
+            results: Iterable of EvaluationResult objects to export.
+            path: Path where the CSV file should be written.
+        """
         path.parent.mkdir(parents=True, exist_ok=True)
         with path.open("w", newline="", encoding="utf-8") as handle:
             writer = csv.DictWriter(
@@ -99,14 +144,18 @@ class EvaluationPipeline:
                     "citation_matches": result.metrics.citation_matches,
                     "actuarial_terms": "; ".join(
                         f"{term}:{count}"
-                        for term, count in sorted(
-                            result.metrics.actuarial_terms.items()
-                        )
+                        for term, count in sorted(result.metrics.actuarial_terms.items())
                     ),
                 }
                 writer.writerow(row)
 
     def export_json(self, results: Iterable[EvaluationResult], path: Path) -> None:
+        """Export evaluation results to a JSON file.
+
+        Args:
+            results: Iterable of EvaluationResult objects to export.
+            path: Path where the JSON file should be written.
+        """
         path.parent.mkdir(parents=True, exist_ok=True)
         serializable = [
             {
@@ -121,11 +170,17 @@ class EvaluationPipeline:
             }
             for result in results
         ]
-        path.write_text(
-            json.dumps(serializable, ensure_ascii=False, indent=2), encoding="utf-8"
-        )
+        path.write_text(json.dumps(serializable, ensure_ascii=False, indent=2), encoding="utf-8")
 
     def summary(self, results: Iterable[EvaluationResult]) -> dict:
+        """Generate summary statistics from evaluation results.
+
+        Args:
+            results: Iterable of EvaluationResult objects.
+
+        Returns:
+            Dictionary containing count, average, minimum, and maximum scores.
+        """
         scores = [result.score.composite for result in results]
         if not scores:
             return {
@@ -142,6 +197,7 @@ class EvaluationPipeline:
         }
 
     def close(self) -> None:
+        """Close the crawler and release resources."""
         self.crawler.close()
 
     def __enter__(self) -> "EvaluationPipeline":

@@ -30,11 +30,7 @@ class TestScoreWeights:
     def test_custom_weights(self):
         """Test custom weight values."""
         weights = ScoreWeights(
-            accuracy=0.5,
-            transparency=0.3,
-            completeness=0.1,
-            freshness=0.05,
-            clarity=0.05,
+            accuracy=0.5, transparency=0.3, completeness=0.1, freshness=0.05, clarity=0.05
         )
 
         assert weights.accuracy == 0.5
@@ -44,11 +40,7 @@ class TestScoreWeights:
     def test_normalize_weights(self):
         """Test weight normalization."""
         weights = ScoreWeights(
-            accuracy=2.0,
-            transparency=1.0,
-            completeness=1.0,
-            freshness=0.5,
-            clarity=0.5,
+            accuracy=2.0, transparency=1.0, completeness=1.0, freshness=0.5, clarity=0.5
         )
 
         normalized = weights.normalize()
@@ -66,11 +58,7 @@ class TestScoreWeights:
     def test_normalize_zero_weights_raises_error(self):
         """Test that normalizing zero weights raises ValueError."""
         weights = ScoreWeights(
-            accuracy=0.0,
-            transparency=0.0,
-            completeness=0.0,
-            freshness=0.0,
-            clarity=0.0,
+            accuracy=0.0, transparency=0.0, completeness=0.0, freshness=0.0, clarity=0.0
         )
 
         with pytest.raises(ValueError, match="Weights sum to zero"):
@@ -249,12 +237,8 @@ class TestComputeComponents:
 
     def test_freshness_score_recent_date(self):
         """Test freshness score for recent content."""
-        recent_date = (
-            dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=30)
-        ).isoformat()
-        old_date = (
-            dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=400)
-        ).isoformat()
+        recent_date = (dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=30)).isoformat()
+        old_date = (dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=400)).isoformat()
 
         metrics = PageMetrics(
             word_count=100,
@@ -338,7 +322,7 @@ class TestApplyWeights:
         score = apply_weights(components, weights)
 
         # Should be weighted average
-        expected = (80.0 * 0.4 + 70.0 * 0.2 + 60.0 * 0.2 + 50.0 * 0.1 + 90.0 * 0.1)
+        expected = 80.0 * 0.4 + 70.0 * 0.2 + 60.0 * 0.2 + 50.0 * 0.1 + 90.0 * 0.1
         assert abs(score - expected) < 0.01
 
     def test_apply_custom_weights(self):
@@ -351,11 +335,7 @@ class TestApplyWeights:
             "clarity": 0.0,
         }
         weights = ScoreWeights(
-            accuracy=1.0,
-            transparency=0.0,
-            completeness=0.0,
-            freshness=0.0,
-            clarity=0.0,
+            accuracy=1.0, transparency=0.0, completeness=0.0, freshness=0.0, clarity=0.0
         )
 
         score = apply_weights(components, weights)
@@ -371,13 +351,7 @@ class TestScorePage:
         """Test scoring an excellent actuarial page."""
         metrics = PageMetrics(
             word_count=500,
-            actuarial_terms={
-                "solvency": 3,
-                "ivass": 2,
-                "best estimate": 2,
-                "scr": 1,
-                "bscr": 1,
-            },
+            actuarial_terms={"solvency": 3, "ivass": 2, "best estimate": 2, "scr": 1, "bscr": 1},
             numeric_tokens=50,
             has_formula=True,
             has_table=True,
@@ -385,13 +359,8 @@ class TestScorePage:
             citation_matches=4,
             example_values=[1000.0, 2000.0, 3000.0],
         )
-        recent_date = (
-            dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=30)
-        ).isoformat()
-        metadata = {
-            "url": "https://attuario.eu/analysis",
-            "published": recent_date,
-        }
+        recent_date = (dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=30)).isoformat()
+        metadata = {"url": "https://attuario.eu/analysis", "published": recent_date}
         weights = ScoreWeights()
 
         result = score_page(metrics, metadata, weights)
@@ -510,9 +479,7 @@ class TestScorePage:
             citation_matches=6,
             example_values=[1000.0, 2500.0, 3700.5, 10000.0],
         )
-        recent_date = (
-            dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=15)
-        ).isoformat()
+        recent_date = (dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=15)).isoformat()
         metadata = {
             "url": "https://attuario.eu/solvency-analysis",
             "title": "Comprehensive Solvency II Analysis",
