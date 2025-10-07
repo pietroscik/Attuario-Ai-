@@ -29,7 +29,7 @@ class TestScoreWeights:
 
     def test_custom_weights(self):
         """Test custom weight values."""
-        weights = ScoreWeights
+        weights = ScoreWeights(
             accuracy=0.5, transparency=0.3, completeness=0.1, freshness=0.05, clarity=0.05
         )
 
@@ -40,9 +40,7 @@ class TestScoreWeights:
     def test_normalize_weights(self):
         """Test weight normalization."""
         weights = ScoreWeights(
-
             accuracy=2.0, transparency=1.0, completeness=1.0, freshness=0.5, clarity=0.5
-
         )
 
         normalized = weights.normalize()
@@ -60,9 +58,7 @@ class TestScoreWeights:
     def test_normalize_zero_weights_raises_error(self):
         """Test that normalizing zero weights raises ValueError."""
         weights = ScoreWeights(
-
             accuracy=0.0, transparency=0.0, completeness=0.0, freshness=0.0, clarity=0.0
-
         )
 
         with pytest.raises(ValueError, match="Weights sum to zero"):
@@ -243,8 +239,6 @@ class TestComputeComponents:
         """Test freshness score for recent content."""
         recent_date = (dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=30)).isoformat()
         old_date = (dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=400)).isoformat()
-
-        
 
         metrics = PageMetrics(
             word_count=100,
@@ -485,9 +479,7 @@ class TestScorePage:
             citation_matches=6,
             example_values=[1000.0, 2500.0, 3700.5, 10000.0],
         )
-        recent_date = (
-            dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=15)
-        ).isoformat()
+        recent_date = (dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=15)).isoformat()
         metadata = {
             "url": "https://attuario.eu/solvency-analysis",
             "title": "Comprehensive Solvency II Analysis",
