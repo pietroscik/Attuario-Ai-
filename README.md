@@ -18,6 +18,8 @@ Toolkit per valutazione automatica dei contenuti attuariali del dominio [attuari
 - **Parser** HTML → testo con estrazione di metadati (titolo, date, autore).
 - **Estrazione metriche** attuariali (terminologia, numeri, formule, citazioni normative).
 - **Scoring composito** secondo i pesi del framework attuariale proposto (accuratezza, trasparenza, completezza, aggiornamento, chiarezza), con possibilità di calibrazione dai feedback umani.
+- **Machine Learning** con modelli baseline (TF-IDF + Logistic Regression) per scoring data-driven.
+- **Modalità multiple** di scoring: heuristic, ml, o hybrid per combinare regole e apprendimento.
 - **Reportistica** in formato CSV e JSON con riepilogo sintetico delle performance del dominio.
 - **Logging e robustezza** con retry automatico per errori di rete e log dettagliati su console e file.
 
@@ -92,6 +94,64 @@ Vedi [docs/LOGGING.md](docs/LOGGING.md) per dettagli ed esempi.
 
 La stampa a video del training include MAE e MSE per monitorare l'accuratezza dell'apprendimento.
 
+### Integrazione Machine Learning
+
+Il sistema supporta tre modalità di scoring:
+
+1. **Heuristic** (default): scoring basato su regole euristiche
+2. **ML**: scoring basato su modello di machine learning (TF-IDF + Logistic Regression)
+3. **Hybrid**: combinazione di entrambi i metodi
+
+#### Allenamento del modello ML
+
+1. Prepara un file `labels.json` con le pagine etichettate:
+
+   ```json
+   [
+     {"url": "https://www.attuario.eu/articolo-1", "target_score": 85.0},
+     {"url": "https://www.attuario.eu/articolo-2", "target_score": 62.0},
+     {"url": "https://www.attuario.eu/articolo-3", "target_score": 90.0}
+   ]
+   ```
+
+2. Allena il modello baseline (TF-IDF + Logistic Regression):
+
+   ```bash
+   python ml/train_baseline.py https://www.attuario.eu labels.json --output-dir ml/models
+   ```
+
+   Il comando genera:
+   - `ml/models/model.pkl`: modello addestrato
+   - `ml/models/vectorizer.pkl`: vectorizer TF-IDF
+
+#### Utilizzo dei modelli ML
+
+**Modalità ML (solo machine learning):**
+
+```bash
+python scripts/run_pipeline.py https://www.attuario.eu \
+  --mode ml \
+  --model-dir ml/models \
+  --max-pages 50
+```
+
+**Modalità Hybrid (euristica + ML):**
+
+```bash
+python scripts/run_pipeline.py https://www.attuario.eu \
+  --mode hybrid \
+  --model-dir ml/models \
+  --max-pages 50
+```
+
+**Modalità Heuristic (default):**
+
+```bash
+python scripts/run_pipeline.py https://www.attuario.eu --max-pages 50
+```
+
+La modalità hybrid combina i punteggi euristici e ML calcolando la loro media, fornendo un approccio bilanciato che sfrutta sia le regole specifiche del dominio che i pattern appresi dai dati.
+
 ## Struttura del progetto
 
 ```
@@ -102,6 +162,10 @@ attuario_ai/
   scoring.py      # calcolo punteggi e classificazione
   learning.py     # apprendimento dei pesi da feedback manuali
   pipeline.py     # orchestrazione e generazione report
+ml/
+  baseline_model.py  # modello ML baseline (TF-IDF + Logistic Regression)
+  predictor.py    # predittore ML per scoring
+  train_baseline.py  # script per allenare il modello
 scripts/
   run_pipeline.py # CLI per eseguire la pipeline completa
   train_weights.py # CLI per calibrare i pesi

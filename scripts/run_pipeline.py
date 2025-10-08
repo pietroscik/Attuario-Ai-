@@ -11,9 +11,7 @@ from attuario_ai import EvaluationPipeline, ScoreWeights, setup_logging
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Evaluate actuarial content quality for a domain."
-    )
+    parser = argparse.ArgumentParser(description="Evaluate actuarial content quality for a domain.")
     parser.add_argument(
         "base_url", help="Starting URL for the crawl (e.g. https://www.example.com)"
     )
@@ -41,6 +39,18 @@ def parse_args() -> argparse.Namespace:
         default=Path("logs/pipeline.log"),
         help="Path to log file (default: logs/pipeline.log)",
     )
+    parser.add_argument(
+        "--mode",
+        type=str,
+        choices=["heuristic", "ml", "hybrid"],
+        default="heuristic",
+        help="Scoring mode: heuristic (rule-based), ml (machine learning), or hybrid (both)",
+    )
+    parser.add_argument(
+        "--model-dir",
+        type=Path,
+        help="Directory containing trained ML model (required for ml/hybrid modes)",
+    )
     return parser.parse_args()
 
 
@@ -53,6 +63,11 @@ def main() -> None:
     output_dir: Path = args.output_dir
     output_dir.mkdir(parents=True, exist_ok=True)
 
+    # Validate mode and model-dir
+    if args.mode in ("ml", "hybrid") and not args.model_dir:
+        print("ERROR: --model-dir is required when using ml or hybrid mode")
+        return
+
     weights = None
     if args.weights:
         weights_data = json.loads(args.weights.read_text(encoding="utf-8"))
@@ -64,6 +79,8 @@ def main() -> None:
         max_depth=args.max_depth,
         delay_seconds=args.delay,
         weights=weights,
+        mode=args.mode,
+        model_dir=args.model_dir,
     ) as pipeline:
         results = pipeline.run()
         pipeline.export_csv(results, output_dir / "report.csv")
@@ -71,9 +88,7 @@ def main() -> None:
         summary = pipeline.summary(results)
 
     summary_path = output_dir / "summary.json"
-    summary_path.write_text(
-        json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8"
-    )
+    summary_path.write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")
     print(json.dumps(summary, indent=2, ensure_ascii=False))
 
 

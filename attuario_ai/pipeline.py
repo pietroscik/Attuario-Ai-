@@ -6,12 +6,14 @@ import csv
 import json
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Iterable, List, Optional
+from typing import Iterable, List, Literal, Optional
 
 from .crawler import Crawler
 from .extraction import PageMetrics, extract_metrics
 from .parser import PageParser, ParsedPage
 from .scoring import PageScore, ScoreWeights, score_page
+
+ScoringMode = Literal["heuristic", "ml", "hybrid"]
 
 
 @dataclass
@@ -44,6 +46,8 @@ class EvaluationPipeline:
         crawler: Crawler instance for fetching pages.
         parser: PageParser instance for parsing HTML.
         weights: ScoreWeights for calculating composite scores.
+        mode: Scoring mode (heuristic, ml, or hybrid).
+        ml_predictor: MLPredictor instance for ML-based scoring (if mode is ml or hybrid).
     """
 
     def __init__(
@@ -54,6 +58,8 @@ class EvaluationPipeline:
         max_depth: int = 1,
         delay_seconds: float = 0.2,
         weights: Optional[ScoreWeights] = None,
+        mode: ScoringMode = "heuristic",
+        model_dir: Optional[Path] = None,
     ) -> None:
         """Initialize the evaluation pipeline.
 
@@ -63,6 +69,8 @@ class EvaluationPipeline:
             max_depth: Maximum link depth from start URL (default: 1).
             delay_seconds: Delay between requests in seconds (default: 0.2).
             weights: Optional custom ScoreWeights for scoring.
+            mode: Scoring mode - 'heuristic', 'ml', or 'hybrid' (default: 'heuristic').
+            model_dir: Directory containing trained ML model (required if mode is 'ml' or 'hybrid').
         """
         self.base_url = base_url
         self.crawler = Crawler(
@@ -73,6 +81,18 @@ class EvaluationPipeline:
         )
         self.parser = PageParser()
         self.weights = weights or ScoreWeights()
+        self.mode = mode
+        self.ml_predictor = None
+
+        if mode in ("ml", "hybrid"):
+            try:
+                from ml.predictor import MLPredictor
+
+                self.ml_predictor = MLPredictor(model_dir=model_dir)
+            except ImportError:
+                raise ImportError("ML module not found. Ensure ml/ package is in the Python path.")
+            except Exception as e:
+                raise RuntimeError(f"Failed to initialize ML predictor: {e}")
 
     def run(self, seeds: Optional[Iterable[str]] = None) -> List[EvaluationResult]:
         """Run the complete evaluation pipeline.
@@ -90,7 +110,38 @@ class EvaluationPipeline:
             parsed = self.parser.parse(crawled.url, crawled.html, crawled.fetched_at)
             metrics = extract_metrics(parsed.text, parsed.html)
             metadata = {**parsed.metadata, "url": parsed.url}
-            score = score_page(metrics, metadata, self.weights)
+
+            # Score based on mode
+            if self.mode == "heuristic":
+                score = score_page(metrics, metadata, self.weights)
+            elif self.mode == "ml":
+                score = self.ml_predictor.score_page(parsed.text, metrics, metadata)
+            elif self.mode == "hybrid":
+                # Hybrid: average of heuristic and ML scores
+                heuristic_score = score_page(metrics, metadata, self.weights)
+                ml_score = self.ml_predictor.score_page(parsed.text, metrics, metadata)
+                composite = (heuristic_score.composite + ml_score.composite) / 2
+                # Merge components
+                components = heuristic_score.components.copy()
+                components["ml_score"] = ml_score.composite
+                # Re-classify based on hybrid score
+                if composite >= 85:
+                    classification = "Eccellente"
+                elif composite >= 70:
+                    classification = "Buono"
+                elif composite >= 50:
+                    classification = "Discreto"
+                else:
+                    classification = "Criticità"
+                score = PageScore(
+                    url=metadata.get("url", ""),
+                    composite=round(composite, 2),
+                    components={k: round(v, 2) for k, v in components.items()},
+                    classification=classification,
+                )
+            else:
+                raise ValueError(f"Invalid scoring mode: {self.mode}")
+
             results.append(EvaluationResult(page=parsed, metrics=metrics, score=score))
         return results
 
@@ -144,9 +195,7 @@ class EvaluationPipeline:
                     "citation_matches": result.metrics.citation_matches,
                     "actuarial_terms": "; ".join(
                         f"{term}:{count}"
-                        for term, count in sorted(
-                            result.metrics.actuarial_terms.items()
-                        )
+                        for term, count in sorted(result.metrics.actuarial_terms.items())
                     ),
                 }
                 writer.writerow(row)
@@ -172,9 +221,7 @@ class EvaluationPipeline:
             }
             for result in results
         ]
-        path.write_text(
-            json.dumps(serializable, ensure_ascii=False, indent=2), encoding="utf-8"
-        )
+        path.write_text(json.dumps(serializable, ensure_ascii=False, indent=2), encoding="utf-8")
 
     def summary(self, results: Iterable[EvaluationResult]) -> dict:
         """Generate summary statistics from evaluation results.
