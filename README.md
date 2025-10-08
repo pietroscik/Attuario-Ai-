@@ -15,6 +15,8 @@ Toolkit per valutazione automatica dei contenuti attuariali del dominio [attuari
 ## ⚙️ Funzionalità principali
 
 - **Crawler** limitato al dominio per raccogliere pagine HTML pubbliche e rispettoso di `robots.txt`.
+- **Caching HTTP** con `requests-cache` per evitare download ripetuti e migliorare le performance.
+- **Crawling parallelo** con `ThreadPoolExecutor` per velocizzare la raccolta su dataset grandi.
 - **Parser** HTML → testo con estrazione di metadati (titolo, date, autore).
 - **Estrazione metriche** attuariali (terminologia, numeri, formule, citazioni normative).
 - **Scoring composito** secondo i pesi del framework attuariale proposto (accuratezza, trasparenza, completezza, aggiornamento, chiarezza), con possibilità di calibrazione dai feedback umani.
@@ -66,6 +68,29 @@ python scripts/run_pipeline.py https://www.attuario.eu --log-file mylogs/custom.
 - **Dual output**: console (formato semplice) e file (formato dettagliato con timestamp)
 
 Vedi [docs/LOGGING.md](docs/LOGGING.md) per dettagli ed esempi.
+
+### Performance e scalabilità
+
+Il crawler supporta ottimizzazioni per velocizzare la raccolta su dataset grandi:
+
+```bash
+# Crawling parallelo (4 worker, default)
+python scripts/run_pipeline.py https://www.attuario.eu --max-pages 100 --max-workers 4
+
+# Caching HTTP per evitare download ripetuti (attivo di default)
+# Disabilita con --no-cache se necessario
+python scripts/run_pipeline.py https://www.attuario.eu --no-cache
+
+# Controllo profondità BFS
+python scripts/run_pipeline.py https://www.attuario.eu --max-depth 3
+```
+
+**Funzionalità:**
+- **Caching HTTP**: SQLite-based cache con scadenza 1 ora (default) per evitare download ridondanti
+- **Crawling parallelo**: ThreadPoolExecutor con 4 worker (default) per fetch concorrente
+- **Controllo profondità**: Parametro `--max-depth` per limitare la profondità BFS
+
+Vedi [docs/PERFORMANCE.md](docs/PERFORMANCE.md) per dettagli, benchmarks ed esempi.
 
 ### Calibrazione dei pesi con feedback umano
 
