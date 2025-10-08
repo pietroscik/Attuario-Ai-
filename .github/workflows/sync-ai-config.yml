@@ -1,0 +1,51 @@
+---
+name: Sync AI Config to Attuario-EU
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "attuario_ai/**"
+      - "scripts/**"
+      - ".github/workflows/sync-ai-config.yml"
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Attuario-Ai-
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Git
+        run: |
+          git config --global user.name "pietroscik-bot"
+          git config --global user.email "bot@attuario.eu"
+
+      - name: Clone attuario-eu repo
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git clone "https://x-access-token:${GH_TOKEN}@github.com/pietroscik/attuario-eu.git"
+          cd attuario-eu
+          git pull origin main
+
+      - name: Copy selected files
+        run: |
+          cp -r .github/workflows/sync-ai-config.yml attuario-eu/.github/workflows/
+          cp -r docs/ attuario-eu/docs-ai-sync/
+          cd attuario-eu
+          git add .
+          git commit -m "chore(sync): updated AI configuration and docs" || echo "No changes to commit"
+
+      - name: Push updates to attuario-eu
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd attuario-eu
+          git push \
+            "https://x-access-token:${GH_TOKEN}@github.com/pietroscik/attuario-eu.git" \
+            main
