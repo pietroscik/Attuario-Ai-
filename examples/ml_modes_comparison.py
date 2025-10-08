@@ -56,7 +56,9 @@ def main():
     # Parse HTML
     parser = PageParser()
     fetched_at = dt.datetime.now(dt.timezone.utc).timestamp()
-    parsed = parser.parse("https://example.com/solvency-analysis", sample_html, fetched_at)
+    parsed = parser.parse(
+        "https://example.com/solvency-analysis", sample_html, fetched_at
+    )
 
     # Extract metrics
     metrics = extract_metrics(parsed.text, parsed.html)
@@ -144,7 +146,9 @@ def main():
     print("=" * 70)
     print("SUMMARY")
     print("=" * 70)
-    print(f"Heuristic Mode: {heuristic_score.composite:.2f} ({heuristic_score.classification})")
+    print(
+        f"Heuristic Mode: {heuristic_score.composite:.2f} ({heuristic_score.classification})"
+    )
     print(f"ML Mode:        {ml_score.composite:.2f} ({ml_score.classification})")
     print(f"Hybrid Mode:    {hybrid_composite:.2f} ({hybrid_classification})")
     print()

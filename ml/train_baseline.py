@@ -66,7 +66,9 @@ def load_labels(labels_path: Path) -> Tuple[Dict[str, float], List[str]]:
 
 def main() -> None:
     """Main training function."""
-    parser = argparse.ArgumentParser(description="Train baseline ML model on labeled pages")
+    parser = argparse.ArgumentParser(
+        description="Train baseline ML model on labeled pages"
+    )
     parser.add_argument(
         "base_url",
         help="Base URL for crawling (e.g., https://www.attuario.eu)",

@@ -60,6 +60,8 @@ class EvaluationPipeline:
         weights: Optional[ScoreWeights] = None,
         mode: ScoringMode = "heuristic",
         model_dir: Optional[Path] = None,
+        use_cache: bool = True,
+        max_workers: int = 4,
     ) -> None:
         """Initialize the evaluation pipeline.
 
@@ -71,6 +73,8 @@ class EvaluationPipeline:
             weights: Optional custom ScoreWeights for scoring.
             mode: Scoring mode - 'heuristic', 'ml', or 'hybrid' (default: 'heuristic').
             model_dir: Directory containing trained ML model (required if mode is 'ml' or 'hybrid').
+            use_cache: Enable HTTP response caching (default: True).
+            max_workers: Number of parallel workers for crawling (default: 4).
         """
         self.base_url = base_url
         self.crawler = Crawler(
@@ -78,6 +82,8 @@ class EvaluationPipeline:
             max_pages=max_pages,
             max_depth=max_depth,
             delay_seconds=delay_seconds,
+            use_cache=use_cache,
+            max_workers=max_workers,
         )
         self.parser = PageParser()
         self.weights = weights or ScoreWeights()
@@ -90,7 +96,9 @@ class EvaluationPipeline:
 
                 self.ml_predictor = MLPredictor(model_dir=model_dir)
             except ImportError:
-                raise ImportError("ML module not found. Ensure ml/ package is in the Python path.")
+                raise ImportError(
+                    "ML module not found. Ensure ml/ package is in the Python path."
+                )
             except Exception as e:
                 raise RuntimeError(f"Failed to initialize ML predictor: {e}")
 
@@ -195,7 +203,9 @@ class EvaluationPipeline:
                     "citation_matches": result.metrics.citation_matches,
                     "actuarial_terms": "; ".join(
                         f"{term}:{count}"
-                        for term, count in sorted(result.metrics.actuarial_terms.items())
+                        for term, count in sorted(
+                            result.metrics.actuarial_terms.items()
+                        )
                     ),
                 }
                 writer.writerow(row)
@@ -221,7 +231,9 @@ class EvaluationPipeline:
             }
             for result in results
         ]
-        path.write_text(json.dumps(serializable, ensure_ascii=False, indent=2), encoding="utf-8")
+        path.write_text(
+            json.dumps(serializable, ensure_ascii=False, indent=2), encoding="utf-8"
+        )
 
     def summary(self, results: Iterable[EvaluationResult]) -> dict:
         """Generate summary statistics from evaluation results.

@@ -11,7 +11,9 @@ from attuario_ai import EvaluationPipeline, ScoreWeights, setup_logging
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Evaluate actuarial content quality for a domain.")
+    parser = argparse.ArgumentParser(
+        description="Evaluate actuarial content quality for a domain."
+    )
     parser.add_argument(
         "base_url", help="Starting URL for the crawl (e.g. https://www.example.com)"
     )
@@ -51,6 +53,20 @@ def parse_args() -> argparse.Namespace:
         type=Path,
         help="Directory containing trained ML model (required for ml/hybrid modes)",
     )
+    parser.add_argument(
+        "--no-cache",
+        action="store_true",
+        help="Disable HTTP response caching (default: caching enabled)",
+    )
+    parser.add_argument(
+        "--max-workers",
+        type=int,
+        default=4,
+        help=(
+            "Maximum number of parallel workers for crawling "
+            "(default: 4, use 1 to disable parallelization)"
+        ),
+    )
     return parser.parse_args()
 
 
@@ -81,6 +97,8 @@ def main() -> None:
         weights=weights,
         mode=args.mode,
         model_dir=args.model_dir,
+        use_cache=not args.no_cache,
+        max_workers=args.max_workers,
     ) as pipeline:
         results = pipeline.run()
         pipeline.export_csv(results, output_dir / "report.csv")
@@ -88,7 +106,9 @@ def main() -> None:
         summary = pipeline.summary(results)
 
     summary_path = output_dir / "summary.json"
-    summary_path.write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")
+    summary_path.write_text(
+        json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8"
+    )
     print(json.dumps(summary, indent=2, ensure_ascii=False))
 
 

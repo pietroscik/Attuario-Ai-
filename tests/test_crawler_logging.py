@@ -19,7 +19,9 @@ class TestCrawlerLogging:
             setup_logging(log_file=str(log_file))
 
             # Create a crawler (we need to use it to trigger logging)
-            _ = Crawler("https://example.com", max_pages=10, max_depth=2)
+            _ = Crawler(
+                "https://example.com", max_pages=10, max_depth=2, use_cache=False
+            )
 
             # Check log content
             content = log_file.read_text()
@@ -40,7 +42,7 @@ class TestCrawlerLogging:
                 mock_response.text = "User-agent: *\nDisallow:\n"
                 mock_get.return_value = mock_response
 
-                _ = Crawler("https://example.com")
+                _ = Crawler("https://example.com", use_cache=False)
 
                 content = log_file.read_text()
                 assert (
@@ -71,7 +73,7 @@ class TestCrawlerLogging:
                     page_response,  # Second page attempt (retry success)
                 ]
 
-                crawler = Crawler("https://example.com", max_pages=1)
+                crawler = Crawler("https://example.com", max_pages=1, use_cache=False)
                 results = list(crawler.crawl())
 
                 # Check that we got a result
@@ -101,7 +103,7 @@ class TestCrawlerLogging:
 
                 mock_get.side_effect = [robots_response, page_response]
 
-                crawler = Crawler("https://example.com", max_pages=1)
+                crawler = Crawler("https://example.com", max_pages=1, use_cache=False)
                 results = list(crawler.crawl())
 
                 assert len(results) == 1
