@@ -44,8 +44,7 @@ class TestCrawlerLogging:
 
                 content = log_file.read_text()
                 assert (
-                    "Successfully fetched robots.txt from https://example.com/robots.txt"
-                    in content
+                    "Successfully fetched robots.txt from https://example.com/robots.txt" in content
                 )
 
     def test_crawler_retry_on_timeout(self):

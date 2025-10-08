@@ -206,7 +206,7 @@ per ottenere un punteggio composito finale e una classificazione qualitativa.
 ```python
 from attuario_ai import score_page, ScoreWeights
 
-weights = ScoreWeights(accuracy=0.4, transparency=0.2, completeness=0.2, 
+weights = ScoreWeights(accuracy=0.4, transparency=0.2, completeness=0.2,
                        freshness=0.1, clarity=0.1)
 score = score_page(metrics, metadata, weights)
 print(f"Score: {score.composite} - {score.classification}")

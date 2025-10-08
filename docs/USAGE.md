@@ -260,19 +260,19 @@ with EvaluationPipeline(
 ) as pipeline:
     # Esegui l'analisi
     results = pipeline.run()
-    
+
     # Esporta in CSV e JSON
     from pathlib import Path
     output_dir = Path("outputs")
     pipeline.export_csv(results, output_dir / "report.csv")
     pipeline.export_json(results, output_dir / "report.json")
-    
+
     # Calcola statistiche
     summary = pipeline.summary(results)
     print(f"Analyzed {summary['count']} pages")
     print(f"Average score: {summary['average']}")
     print(f"Score range: {summary['minimum']} - {summary['maximum']}")
-    
+
     # Mostra dettagli delle pagine migliori
     sorted_results = sorted(results, key=lambda r: r.score.composite, reverse=True)
     print("\nTop 5 pages:")

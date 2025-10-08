@@ -11,9 +11,7 @@ from attuario_ai import EvaluationPipeline, ScoreWeights, setup_logging
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Evaluate actuarial content quality for a domain."
-    )
+    parser = argparse.ArgumentParser(description="Evaluate actuarial content quality for a domain.")
     parser.add_argument(
         "base_url", help="Starting URL for the crawl (e.g. https://www.example.com)"
     )
@@ -71,9 +69,7 @@ def main() -> None:
         summary = pipeline.summary(results)
 
     summary_path = output_dir / "summary.json"
-    summary_path.write_text(
-        json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8"
-    )
+    summary_path.write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")
     print(json.dumps(summary, indent=2, ensure_ascii=False))
 
 
