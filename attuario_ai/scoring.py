@@ -40,7 +40,11 @@ class ScoreWeights:
             ValueError: If all weights sum to zero.
         """
         total = (
-            self.accuracy + self.transparency + self.completeness + self.freshness + self.clarity
+            self.accuracy
+            + self.transparency
+            + self.completeness
+            + self.freshness
+            + self.clarity
         )
         if not total:
             raise ValueError("Weights sum to zero")
@@ -105,7 +109,9 @@ class PageScore:
 FRESHNESS_DECAY_DAYS = 365
 
 
-def score_page(metrics: PageMetrics, metadata: Dict[str, str], weights: ScoreWeights) -> PageScore:
+def score_page(
+    metrics: PageMetrics, metadata: Dict[str, str], weights: ScoreWeights
+) -> PageScore:
     """Calculate a comprehensive quality score for a page.
 
     Computes individual component scores and combines them using the provided
@@ -130,7 +136,9 @@ def score_page(metrics: PageMetrics, metadata: Dict[str, str], weights: ScoreWei
     )
 
 
-def compute_components(metrics: PageMetrics, metadata: Dict[str, str]) -> Dict[str, float]:
+def compute_components(
+    metrics: PageMetrics, metadata: Dict[str, str]
+) -> Dict[str, float]:
     """Compute individual scoring components from metrics.
 
     Args:
@@ -144,7 +152,9 @@ def compute_components(metrics: PageMetrics, metadata: Dict[str, str]) -> Dict[s
         "accuracy": _score_accuracy(metrics),
         "transparency": _score_transparency(metrics),
         "completeness": _score_completeness(metrics),
-        "freshness": _score_freshness(metadata.get("modified") or metadata.get("published")),
+        "freshness": _score_freshness(
+            metadata.get("modified") or metadata.get("published")
+        ),
         "clarity": _score_clarity(metrics),
     }
 

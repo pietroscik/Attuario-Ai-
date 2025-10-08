@@ -24,7 +24,9 @@ class EvaluationResult:
     details: Dict[str, float]
 
 
-def _train_linear_regression(X: np.ndarray, y: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+def _train_linear_regression(
+    X: np.ndarray, y: np.ndarray
+) -> Tuple[np.ndarray, np.ndarray]:
     """Train a linear regression model using least squares.
 
     Estimates coefficients using numpy's least squares solver without sklearn.
@@ -123,7 +125,9 @@ class Learner:
         df = df.dropna()
         return df
 
-    def _split(self, df: pd.DataFrame) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    def _split(
+        self, df: pd.DataFrame
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         """Split data into train and test sets.
 
         Args:

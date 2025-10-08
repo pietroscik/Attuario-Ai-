@@ -75,9 +75,9 @@ class RobotsPolicy:
             if response.status_code < 400 and response.text.strip():
                 self._parser.parse(response.text.splitlines())
                 self._available = True
-                self.crawl_delay = self._parser.crawl_delay(user_agent) or self._parser.crawl_delay(
-                    "*"
-                )
+                self.crawl_delay = self._parser.crawl_delay(
+                    user_agent
+                ) or self._parser.crawl_delay("*")
                 sitemaps = self._parser.site_maps() or []
                 self.sitemaps = tuple(sitemaps)
                 logger.info(f"Successfully fetched robots.txt from {robots_url}")
@@ -155,7 +155,9 @@ class Crawler:
         self._netloc = parsed.netloc
 
         logger.info(f"Initializing crawler for {self.base_url}")
-        logger.info(f"Config: max_pages={max_pages}, max_depth={max_depth}, delay={delay_seconds}s")
+        logger.info(
+            f"Config: max_pages={max_pages}, max_depth={max_depth}, delay={delay_seconds}s"
+        )
 
         self._robots = RobotsPolicy(
             self.base_url,
@@ -251,7 +253,9 @@ class Crawler:
                 error = None
 
                 if attempt > 0:
-                    logger.info(f"Successfully fetched {url} on retry attempt {attempt + 1}")
+                    logger.info(
+                        f"Successfully fetched {url} on retry attempt {attempt + 1}"
+                    )
 
                 time.sleep(self.delay_seconds)
                 break
@@ -259,9 +263,13 @@ class Crawler:
                 html = ""
                 status_code = None
                 error = f"Timeout: {exc}"
-                logger.warning(f"Timeout fetching {url} (attempt {attempt + 1}/{max_retries})")
+                logger.warning(
+                    f"Timeout fetching {url} (attempt {attempt + 1}/{max_retries})"
+                )
                 if attempt == max_retries - 1:
-                    logger.error(f"Failed to fetch {url} after {max_retries} attempts: {error}")
+                    logger.error(
+                        f"Failed to fetch {url} after {max_retries} attempts: {error}"
+                    )
             except requests.ConnectionError as exc:
                 html = ""
                 status_code = None
@@ -270,7 +278,9 @@ class Crawler:
                     f"Connection error fetching {url} (attempt {attempt + 1}/{max_retries})"
                 )
                 if attempt == max_retries - 1:
-                    logger.error(f"Failed to fetch {url} after {max_retries} attempts: {error}")
+                    logger.error(
+                        f"Failed to fetch {url} after {max_retries} attempts: {error}"
+                    )
             except requests.HTTPError as exc:
                 html = ""
                 status_code = exc.response.status_code if exc.response else None
@@ -280,12 +290,16 @@ class Crawler:
             except requests.RequestException as exc:
                 html = ""
                 status_code = (
-                    exc.response.status_code if getattr(exc, "response", None) is not None else None
+                    exc.response.status_code
+                    if getattr(exc, "response", None) is not None
+                    else None
                 )
                 error = str(exc)
                 logger.error(f"Request error fetching {url}: {error}")
                 if attempt == max_retries - 1:
-                    logger.error(f"Failed to fetch {url} after {max_retries} attempts: {error}")
+                    logger.error(
+                        f"Failed to fetch {url} after {max_retries} attempts: {error}"
+                    )
 
         return CrawlResult(
             url=url,
@@ -331,7 +345,10 @@ class Crawler:
         parsed = urlparse(url)
         normalized = parsed._replace(fragment="").geturl()
         # Remove trailing slash except for root path
-        if normalized.endswith("/") and normalized != f"{parsed.scheme}://{parsed.netloc}/":
+        if (
+            normalized.endswith("/")
+            and normalized != f"{parsed.scheme}://{parsed.netloc}/"
+        ):
             normalized = normalized[:-1]
         return normalized
 
