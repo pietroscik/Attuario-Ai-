@@ -29,6 +29,34 @@ class TestCrawlerLogging:
             assert "max_pages=10" in content
             assert "max_depth=2" in content
 
+    def test_crawler_with_caching_enabled(self):
+        """Test that crawler logs caching configuration when enabled."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_file = Path(tmpdir) / "cache_test.log"
+            setup_logging(log_file=str(log_file))
+
+            # Create crawler with caching enabled (default)
+            crawler = Crawler("https://example.com", use_cache=True)
+            crawler.close()
+
+            # Check log content for cache configuration
+            content = log_file.read_text()
+            assert "HTTP caching enabled" in content
+            assert "expire_after=" in content
+
+    def test_crawler_with_parallel_workers(self):
+        """Test that crawler logs parallel configuration."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_file = Path(tmpdir) / "parallel_test.log"
+            setup_logging(log_file=str(log_file))
+
+            # Create crawler with multiple workers
+            _ = Crawler("https://example.com", max_workers=8, use_cache=False)
+
+            # Check log content for worker configuration
+            content = log_file.read_text()
+            assert "max_workers=8" in content
+
     def test_crawler_logs_robots_txt_fetch(self):
         """Test that crawler logs robots.txt fetch attempts."""
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -113,3 +141,63 @@ class TestCrawlerLogging:
                 assert "Starting crawl" in content
                 assert "Successfully crawled [1/1]" in content
                 assert "Crawl completed. Total pages crawled: 1" in content
+
+    def test_parallel_crawling_path_used(self):
+        """Test that parallel crawling path is used when max_workers > 1."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_file = Path(tmpdir) / "parallel_crawl_test.log"
+            setup_logging(log_file=str(log_file))
+
+            with patch("requests.Session.get") as mock_get:
+                # Mock robots.txt
+                robots_response = Mock()
+                robots_response.status_code = 404
+                robots_response.text = ""
+
+                # Mock page responses
+                page_response = Mock()
+                page_response.status_code = 200
+                page_response.text = "<html><body><h1>Test</h1></body></html>"
+
+                mock_get.side_effect = [robots_response, page_response]
+
+                crawler = Crawler(
+                    "https://example.com", max_pages=1, max_workers=2, use_cache=False
+                )
+                results = list(crawler.crawl())
+
+                assert len(results) == 1
+
+                # Check that parallel crawling log message appears
+                content = log_file.read_text()
+                assert "Using parallel crawling with 2 workers" in content
+
+    def test_sequential_crawling_path_used(self):
+        """Test that sequential crawling path is used when max_workers = 1."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            log_file = Path(tmpdir) / "sequential_crawl_test.log"
+            setup_logging(log_file=str(log_file))
+
+            with patch("requests.Session.get") as mock_get:
+                # Mock robots.txt
+                robots_response = Mock()
+                robots_response.status_code = 404
+                robots_response.text = ""
+
+                # Mock page response
+                page_response = Mock()
+                page_response.status_code = 200
+                page_response.text = "<html><body><h1>Test</h1></body></html>"
+
+                mock_get.side_effect = [robots_response, page_response]
+
+                crawler = Crawler(
+                    "https://example.com", max_pages=1, max_workers=1, use_cache=False
+                )
+                results = list(crawler.crawl())
+
+                assert len(results) == 1
+
+                # Check that parallel crawling log message does NOT appear
+                content = log_file.read_text()
+                assert "Using parallel crawling" not in content
