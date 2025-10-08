@@ -1,30 +1,34 @@
-# Attuario-Ai-
+# # Attuario-Ai-
 
 [![Tests](https://github.com/pietroscik/Attuario-Ai-/actions/workflows/tests.yml/badge.svg)](https://github.com/pietroscik/Attuario-Ai-/actions/workflows/tests.yml)
-[![Lint](https://github.com/pietroscik/Attuario-Ai-/actions/workflows/lint.yml/badge.svg)# Attuario-Ai-
+[![Lint](https://github.com/pietroscik/Attuario-Ai-/actions/workflows/lint.yml/badge.svg)](https://github.com/pietroscik/Attuario-Ai-/actions/workflows/lint.yml)
+[![Domain Analysis](https://github.com/pietroscik/Attuario-Ai-/actions/workflows/domain_analysis.yml/badge.svg)](https://github.com/pietroscik/Attuario-Ai-/actions/workflows/domain_analysis.yml)
 
-Toolkit per valutazione automatica dei contenuti attuariali del dominio attuario.eu.
+Toolkit per **valutazione automatica dei contenuti attuariali** del dominio [attuario.eu](https://www.attuario.eu).
 
-## Funzionalità principali
+---
+
+## ⚙️ Funzionalità principali
 
 - **Crawler** limitato al dominio per raccogliere pagine HTML pubbliche e rispettoso di `robots.txt`.
-- **Parser** HTML → testo con estrazione di metadata (titolo, date, autore).
+- **Parser** HTML → testo con estrazione di metadati (titolo, date, autore).
 - **Estrazione metriche** attuariali (terminologia, numeri, formule, citazioni normative).
-- **Scoring** composito secondo i pesi del framework attuariale proposto (accuratezza, trasparenza, completezza, aggiornamento, chiarezza) con possibilità di calibrazione dai feedback umani.
+- **Scoring composito** secondo i pesi del framework attuariale proposto (accuratezza, trasparenza, completezza, aggiornamento, chiarezza), con possibilità di calibrazione dai feedback umani.
 - **Reportistica** in formato CSV e JSON con riepilogo sintetico delle performance del dominio.
 - **Logging e robustezza** con retry automatico per errori di rete e log dettagliati su console e file.
 
-## Requisiti
+---
+
+## 📦 Requisiti
 
 - Python 3.10+
 - Dipendenze elencate in `requirements.txt`
 
-Installazione delle dipendenze:
+Installa le dipendenze con:
 
 ```bash
 pip install -r requirements.txt
 ```
-
 ## Esecuzione rapida
 
 ```bash
