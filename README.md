@@ -1,10 +1,14 @@
-# # Attuario-Ai-
+# Attuario-Ai-
 
+[![Lint & Style Check](https://github.com/pietroscik/Attuario-Ai-/actions/workflows/lint.yml/badge.svg)](https://github.com/pietroscik/Attuario-Ai-/actions/workflows/lint.yml)
 [![Tests](https://github.com/pietroscik/Attuario-Ai-/actions/workflows/tests.yml/badge.svg)](https://github.com/pietroscik/Attuario-Ai-/actions/workflows/tests.yml)
-[![Lint](https://github.com/pietroscik/Attuario-Ai-/actions/workflows/lint.yml/badge.svg)](https://github.com/pietroscik/Attuario-Ai-/actions/workflows/lint.yml)
-[![Domain Analysis](https://github.com/pietroscik/Attuario-Ai-/actions/workflows/domain_analysis.yml/badge.svg)](https://github.com/pietroscik/Attuario-Ai-/actions/workflows/domain_analysis.yml)
+[![Domain Analysis](https://github.com/pietroscik/Attuario-Ai-/actions/workflows/analysis.yml/badge.svg)](https://github.com/pietroscik/Attuario-Ai-/actions/workflows/analysis.yml)
 
-Toolkit per **valutazione automatica dei contenuti attuariali** del dominio [attuario.eu](https://www.attuario.eu).
+Toolkit per valutazione automatica dei contenuti attuariali del dominio [attuario.eu](https://www.attuario.eu).
+
+[![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)]()
+[![License](https://img.shields.io/github/license/pietroscik/Attuario-Ai-?color=blue)]()
+[![Repo size](https://img.shields.io/github/repo-size/pietroscik/Attuario-Ai-.svg)]()
 
 ---
 
