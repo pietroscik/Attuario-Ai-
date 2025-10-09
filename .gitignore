@@ -99,6 +99,7 @@ check.txt
 *.sqlite3
 attuario_cache*
 outputs/
+ml/models/
 notebooks/
 __experiments__/
 tmp/
