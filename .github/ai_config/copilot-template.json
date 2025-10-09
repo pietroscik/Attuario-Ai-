@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "python_version": "3.13",
+  "style": [
+    "black",
+    "flake8"
+  ],
+  "rules": {
+    "language_overrides": {
+      "python": {
+        "style": "black",
+        "lint": "flake8",
+        "max_line_length": 100,
+        "auto_imports": false
+      },
+      "markdown": {
+        "wrap": 120
+      }
+    },
+    "general_guidelines": [
+      "Rispetta setup.cfg e .pre-commit-config.yaml.",
+      "Non aggiornare automaticamente i pacchetti.",
+      "Usa stile PEP8 e snake_case.",
+      "Evita modifiche ai workflow GitHub senza conferma."
+    ]
+  }
+}

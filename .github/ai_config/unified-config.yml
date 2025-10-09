@@ -1,0 +1,64 @@
+meta:
+  project: "Attuario-Ai-"
+  maintainer: "pietroscik"
+  description: "Analisi e valutazione automatizzata dei contenuti attuario.eu"
+  sync_with_repo: "attuario-eu"
+  sync_mode: "notify-only"
+
+development:
+  python_version: "3.13"
+  use_virtualenv: ".venv"
+  auto_update: false
+  formatters:
+    - name: black
+      version: "24.8.0"
+    - name: flake8
+      version: "7.1.1"
+      ignore: ["E203", "W503"]
+  max_line_length: 100
+  excluded_paths:
+    - "node_modules"
+    - "actions-runner"
+    - "__pycache__"
+    - "dist"
+  enforce_pep8: true
+
+capilot:
+  tests:
+    lint_before_push: true
+    enforce_flake8_version: "7.1.1"
+    enforce_black_version: "24.8.0"
+  ci:
+    python_version: "3.13"
+    preserve_cache: true
+  safety:
+    disable_auto_push_to_other_repos: true
+    notify_on_divergence: true
+  issues:
+    require_passing_precommit: true
+    label_automation: true
+    close_if_stale_days: 30
+
+copilot:
+  language_overrides:
+    python:
+      style: "black"
+      lint: "flake8"
+      max_line_length: 100
+      auto_imports: false
+    markdown:
+      wrap: 120
+  general_guidelines:
+    - "Rispetta setup.cfg e .pre-commit-config.yaml."
+    - "Non aggiornare automaticamente i pacchetti."
+    - "Usa stile PEP8 e snake_case."
+    - "Evita modifiche ai workflow GitHub senza conferma."
+
+integration:
+  paired_repo: "attuario-eu"
+  trigger_actions:
+    - "check_content_update"
+    - "re-evaluate_credit_score"
+  forbidden_actions:
+    - "direct_push"
+    - "auto_merge"

@@ -1,0 +1,20 @@
+project: Attuario-Ai-
+tests:
+  lint_before_push: true
+  enforce_flake8_version: 7.1.1
+  enforce_black_version: 24.8.0
+ci:
+  python_version: '3.13'
+  preserve_cache: true
+issues:
+  require_passing_precommit: true
+  label_automation: true
+  close_if_stale_days: 30
+integration:
+  paired_repo: attuario-eu
+  trigger_actions:
+  - check_content_update
+  - re-evaluate_credit_score
+  forbidden_actions:
+  - direct_push
+  - auto_merge
