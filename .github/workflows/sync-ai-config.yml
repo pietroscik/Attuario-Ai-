@@ -27,11 +27,14 @@ jobs:
 
       - name: Clone attuario-eu repo
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SYNC_PAT: ${{ secrets.SYNC_PAT }}
         run: |
-          git clone "https://x-access-token:${GH_TOKEN}@github.com/pietroscik/attuario-eu.git"
+          git clone "https://x-access-token:${SYNC_PAT}@github.com/pietroscik/attuario-eu.git"
           cd attuario-eu
           git pull origin main
+
+      - name: Ensure destination path exists
+        run: mkdir -p attuario-eu/.github/workflows/
 
       - name: Copy selected files
         run: |
@@ -43,9 +46,9 @@ jobs:
 
       - name: Push updates to attuario-eu
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SYNC_PAT: ${{ secrets.SYNC_PAT }}
         run: |
           cd attuario-eu
           git push \
-            "https://x-access-token:${GH_TOKEN}@github.com/pietroscik/attuario-eu.git" \
+            "https://x-access-token:${SYNC_PAT}@github.com/pietroscik/attuario-eu.git" \
             main
