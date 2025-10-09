@@ -9,7 +9,8 @@ on:
       - "attuario_ai/**"
       - "scripts/**"
       - ".github/workflows/sync-ai-config.yml"
-
+permissions:
+   contents: write
 jobs:
   sync:
     runs-on: ubuntu-latest
