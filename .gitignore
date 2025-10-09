@@ -1,13 +1,134 @@
-actions-runner/
+git add .gitignore# ==============================
+#  🧠 ATTUARIO-AI PROJECT
+#  Git Ignore Configuration
+#  Ottimizzato per:
+#  - Python 3.12+
+#  - Pytest / Coverage
+#  - GitHub Actions CI/CD
+#  - Self-hosted Runner ARM64
+# ==============================
+
+# ------------------------------
+# Python cache & bytecode
+# ------------------------------
 __pycache__/
-*.pyc
-*.pyo
-.pytest_cache/
-*.egg-info/
+*.py[cod]
+*$py.class
+
+# ------------------------------
+# Virtual environments
+# ------------------------------
+.venv/
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# ------------------------------
+# Build & packaging artifacts
+# ------------------------------
 build/
+develop-eggs/
 dist/
+downloads/
+eggs/
+.eggs/
+*.egg
+*.egg-info/
+MANIFEST
+pip-wheel-metadata/
+
+# ------------------------------
+# Logs & debug outputs
+# ------------------------------
+*.log
 logs/
+nohup.out
+
+# ------------------------------
+# Test, coverage & profiling
+# ------------------------------
+.coverage
+*.cover
+coverage.xml
+.pytest_cache/
+.tox/
+htmlcov/
+.cache/
+.prof
+
+# ------------------------------
+# Editors & IDEs
+# ------------------------------
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# ------------------------------
+# Temporary & system files
+# ------------------------------
+.DS_Store
+Thumbs.db
+*.bak
+*.swp
+*.tmp
+*.orig
+
+# ------------------------------
+# GitHub Actions (local runner)
+# ------------------------------
+actions-runner/
+.runner/
+runner.log
+_service/
+# (I runner self-hosted non vanno mai committati)
+
+# ------------------------------
+# Project-specific ignores
+# ------------------------------
+check.txt
+*.rds
+*.csv
+*.xlsx
+*.pkl
+*.json
+*.db
+*.sqlite
+*.sqlite3
+attuario_cache*
 outputs/
 ml/models/
-*.pkl
-.attuario_cache*
+notebooks/
+__experiments__/
+tmp/
+sandbox/
+.old/
+
+# ------------------------------
+# Node / Frontend (in caso di future integrazioni)
+# ------------------------------
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.next/
+out/
+dist/
+build/
+
+# ------------------------------
+# ✅ KEEP THESE (IMPORTANT)
+# ------------------------------
+!.github/
+!.github/workflows/
+!requirements.txt
+!requirements-dev.txt
+!setup.py
+!setup.cfg
+!README.md
+!docs/
+!examples/
+!examples/*.json
+!docs/**/*.json
