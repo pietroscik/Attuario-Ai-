@@ -129,3 +129,5 @@ build/
 !README.md
 !docs/
 !examples/
+!examples/*.json
+!docs/**/*.json
