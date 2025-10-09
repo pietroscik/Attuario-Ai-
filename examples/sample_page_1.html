@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Valutazione del Risk Margin secondo Solvency II</title>
+    <meta name="description" content="Analisi dettagliata del calcolo del Risk Margin per le riserve tecniche secondo la direttiva Solvency II e le linee guida IVASS">
+    <meta name="author" content="Dr. Marco Bianchi">
+    <meta property="article:published_time" content="2024-01-15T10:30:00Z">
+    <meta property="article:modified_time" content="2024-01-20T14:22:00Z">
+</head>
+<body>
+    <article>
+        <header>
+            <h1>Valutazione del Risk Margin secondo Solvency II</h1>
+            <p class="byline">Di Dr. Marco Bianchi | Pubblicato il 15 gennaio 2024 | Aggiornato il 20 gennaio 2024</p>
+        </header>
+
+        <section>
+            <h2>Introduzione al Risk Margin</h2>
+            <p>Il Risk Margin rappresenta una componente fondamentale delle riserve tecniche secondo la direttiva Solvency II (Dir. 2009/138/CE). Esso costituisce il costo addizionale che un'impresa di assicurazione dovrebbe sostenere per trasferire le proprie passività assicurative a un'altra impresa.</p>
+        </section>
+
+        <section>
+            <h2>Metodologia di Calcolo</h2>
+            <p>Secondo le linee guida EIOPA e IVASS (Regolamento n. 18/2016), il Risk Margin si calcola come il valore attuale del costo del capitale necessario per coprire il SCR (Solvency Capital Requirement) durante tutta la vita delle passività.</p>
+            
+            <p>La formula generale per il calcolo è:</p>
+            <p><strong>RM = CoC × Σ<sub>t</sub> [SCR<sub>t</sub> / (1 + r<sub>t</sub>)<sup>t</sup>]</strong></p>
+            
+            <p>dove:</p>
+            <ul>
+                <li><strong>CoC</strong> (Cost of Capital) = 6% come stabilito dalla normativa Solvency II</li>
+                <li><strong>SCR<sub>t</sub></strong> = Solvency Capital Requirement al tempo t</li>
+                <li><strong>r<sub>t</sub></strong> = tasso di sconto risk-free al tempo t</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>Esempio Pratico di Calcolo</h2>
+            <p>Consideriamo un portafoglio vita con le seguenti caratteristiche:</p>
+            
+            <table border="1" cellpadding="5">
+                <thead>
+                    <tr>
+                        <th>Anno</th>
+                        <th>Best Estimate (€)</th>
+                        <th>SCR (€)</th>
+                        <th>Tasso Risk-Free (%)</th>
+                        <th>Fattore di Sconto</th>
+                        <th>SCR Scontato (€)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>0</td>
+                        <td>10,000,000</td>
+                        <td>2,500,000</td>
+                        <td>2.5</td>
+                        <td>1.000</td>
+                        <td>2,500,000</td>
+                    </tr>
+                    <tr>
+                        <td>1</td>
+                        <td>8,500,000</td>
+                        <td>2,125,000</td>
+                        <td>2.6</td>
+                        <td>0.975</td>
+                        <td>2,071,875</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>7,200,000</td>
+                        <td>1,800,000</td>
+                        <td>2.7</td>
+                        <td>0.948</td>
+                        <td>1,706,400</td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td>6,000,000</td>
+                        <td>1,500,000</td>
+                        <td>2.8</td>
+                        <td>0.921</td>
+                        <td>1,381,500</td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td>4,900,000</td>
+                        <td>1,225,000</td>
+                        <td>2.9</td>
+                        <td>0.895</td>
+                        <td>1,096,375</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <p>Il Risk Margin risulta quindi:</p>
+            <p><strong>RM = 6% × (2,500,000 + 2,071,875 + 1,706,400 + 1,381,500 + 1,096,375) = 6% × 8,756,150 = 525,369 €</strong></p>
+        </section>
+
+        <section>
+            <h2>Componenti del SCR</h2>
+            <p>Il Solvency Capital Requirement (SCR) si compone di diversi moduli di rischio secondo la standard formula:</p>
+            
+            <ul>
+                <li><strong>BSCR</strong> (Basic Solvency Capital Requirement): comprende i rischi di sottoscrizione, mercato, credito e operativo</li>
+                <li><strong>Adj</strong>: aggiustamento per la capacità di assorbimento delle perdite da parte delle riserve tecniche e delle imposte differite</li>
+                <li><strong>SCR<sub>op</sub></strong>: requisito di capitale per il rischio operativo</li>
+            </ul>
+
+            <p>La formula aggregata è:</p>
+            <p><strong>SCR = BSCR + Adj + SCR<sub>op</sub></strong></p>
+        </section>
+
+        <section>
+            <h2>Impatto sulla Solvency Ratio</h2>
+            <p>Il Risk Margin impatta direttamente sul calcolo della Solvency Ratio, definita come:</p>
+            <p><strong>Solvency Ratio = Fondi Propri Ammissibili / SCR × 100</strong></p>
+            
+            <p>Nell'esempio precedente, con fondi propri di 12,000,000 € e un SCR iniziale di 2,500,000 €, la Solvency Ratio risulta:</p>
+            <p><strong>SR = 12,000,000 / 2,500,000 × 100 = 480%</strong></p>
+            
+            <p>Un valore superiore al 100% indica che l'impresa dispone di capitale sufficiente per coprire i rischi identificati.</p>
+        </section>
+
+        <section>
+            <h2>Normativa di Riferimento</h2>
+            <p>I principali riferimenti normativi per il calcolo del Risk Margin sono:</p>
+            <ol>
+                <li><strong>Direttiva 2009/138/CE (Solvency II)</strong>: stabilisce il framework generale per la vigilanza sulle imprese assicurative</li>
+                <li><strong>Regolamento Delegato (UE) 2015/35</strong>: definisce i requisiti tecnici per il calcolo delle riserve tecniche</li>
+                <li><strong>Linee Guida EIOPA</strong>: forniscono indicazioni operative per l'applicazione della normativa</li>
+                <li><strong>Regolamento IVASS n. 18/2016</strong>: recepisce la normativa europea nel contesto italiano</li>
+                <li><strong>Circolare IVASS n. 53/2016</strong>: fornisce chiarimenti sull'applicazione pratica delle disposizioni</li>
+            </ol>
+        </section>
+
+        <section>
+            <h2>Conclusioni</h2>
+            <p>Il corretto calcolo del Risk Margin è essenziale per garantire la solvibilità delle imprese assicurative secondo Solvency II. La metodologia standard prevede l'uso del Cost of Capital approach al 6%, con proiezioni dei SCR futuri scontati al tasso risk-free. Una valutazione accurata richiede modelli attuariali robusti e una profonda comprensione della normativa IVASS ed EIOPA.</p>
+        </section>
+
+        <footer>
+            <p><em>Articolo conforme alle linee guida IVASS aggiornate a gennaio 2024</em></p>
+        </footer>
+    </article>
+</body>
+</html>

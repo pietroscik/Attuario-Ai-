@@ -1,0 +1,173 @@
+[
+  {
+    "page": {
+      "url": "https://www.attuario.eu/example-1",
+      "title": "Valutazione del Risk Margin secondo Solvency II",
+      "metadata": {
+        "language": "it",
+        "description": "Analisi dettagliata del calcolo del Risk Margin per le riserve tecniche secondo la direttiva Solvency II e le linee guida IVASS",
+        "published": "2024-01-15T10:30:00Z",
+        "modified": "2024-01-20T14:22:00Z",
+        "author": "Dr. Marco Bianchi"
+      }
+    },
+    "metrics": {
+      "word_count": 565,
+      "actuarial_terms": {
+        "best estimate": 1,
+        "eiopa": 3,
+        "risk margin": 8,
+        "scr": 16,
+        "bscr": 2,
+        "ivass": 5,
+        "solvency ii": 5,
+        "solvency": 13
+      },
+      "numeric_tokens": 92,
+      "has_formula": true,
+      "has_table": true,
+      "has_list": true,
+      "citation_matches": 22,
+      "example_values": [
+        15.0,
+        2024.0,
+        20.0,
+        2024.0,
+        2009.0,
+        138.0,
+        18.0,
+        2016.0,
+        1.0,
+        6.0,
+        0.0,
+        10.0,
+        0.0,
+        2.5,
+        0.0,
+        2.5,
+        1.0,
+        2.5,
+        0.0,
+        1.0
+      ]
+    },
+    "score": {
+      "composite": 88.5,
+      "classification": "Eccellente",
+      "components": {
+        "accuracy": 100.0,
+        "transparency": 100.0,
+        "completeness": 100,
+        "freshness": 20.0,
+        "clarity": 65.0
+      }
+    }
+  },
+  {
+    "page": {
+      "url": "https://www.attuario.eu/example-2",
+      "title": "Best Estimate e Riserve Tecniche",
+      "metadata": {
+        "language": "it",
+        "description": "Guida al calcolo del Best Estimate delle riserve tecniche per compagnie assicurative",
+        "published": "2023-06-10T09:00:00Z",
+        "modified": null,
+        "author": "Maria Rossi"
+      }
+    },
+    "metrics": {
+      "word_count": 282,
+      "actuarial_terms": {
+        "best estimate": 8,
+        "eiopa": 1,
+        "risk margin": 2,
+        "ivass": 2,
+        "solvency ii": 3,
+        "mortalità": 1,
+        "solvency": 3
+      },
+      "numeric_tokens": 21,
+      "has_formula": true,
+      "has_table": true,
+      "has_list": true,
+      "citation_matches": 9,
+      "example_values": [
+        10.0,
+        2023.0,
+        1.0,
+        1.0,
+        500.0,
+        2.5,
+        487.805,
+        2.0,
+        450.0,
+        2.6,
+        427.35,
+        3.0,
+        400.0,
+        2.7,
+        368.8,
+        1.283,
+        955.0,
+        2009.0,
+        138.0,
+        18.0
+      ]
+    },
+    "score": {
+      "composite": 83.96,
+      "classification": "Buono",
+      "components": {
+        "accuracy": 84.89,
+        "transparency": 100.0,
+        "completeness": 100,
+        "freshness": 20.0,
+        "clarity": 80.0
+      }
+    }
+  },
+  {
+    "page": {
+      "url": "https://www.attuario.eu/example-3",
+      "title": "Introduzione all'Assicurazione Vita",
+      "metadata": {
+        "language": "it",
+        "description": "Panoramica generale sui prodotti assicurativi vita",
+        "published": null,
+        "modified": null,
+        "author": null
+      }
+    },
+    "metrics": {
+      "word_count": 235,
+      "actuarial_terms": {
+        "premio": 3,
+        "riserva": 3,
+        "ivass": 1,
+        "solvency ii": 1,
+        "riserva matematica": 2,
+        "solvency": 1
+      },
+      "numeric_tokens": 2,
+      "has_formula": false,
+      "has_table": false,
+      "has_list": true,
+      "citation_matches": 4,
+      "example_values": [
+        100.0,
+        800.0
+      ]
+    },
+    "score": {
+      "composite": 71.68,
+      "classification": "Buono",
+      "components": {
+        "accuracy": 61.7,
+        "transparency": 90,
+        "completeness": 80,
+        "freshness": 50.0,
+        "clarity": 80.0
+      }
+    }
+  }
+]
