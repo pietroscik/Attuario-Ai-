@@ -10,3 +10,4 @@ logs/
 outputs/
 ml/models/
 *.pkl
+.attuario_cache*

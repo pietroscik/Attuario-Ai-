@@ -35,7 +35,9 @@ class MLPredictor:
             vectorizer_path = model_dir / "vectorizer.pkl"
             self.model.load(model_path, vectorizer_path)
 
-    def score_page(self, text: str, metrics: PageMetrics, metadata: Dict[str, str]) -> PageScore:
+    def score_page(
+        self, text: str, metrics: PageMetrics, metadata: Dict[str, str]
+    ) -> PageScore:
         """Score a page using the ML model.
 
         Args:

@@ -7,12 +7,14 @@ from __future__ import annotations
 import logging
 import time
 from collections import deque
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from typing import Deque, Iterable, Optional, Set
 from urllib.parse import urljoin, urlparse
 from urllib import robotparser
 
 import requests
+import requests_cache
 from requests import Response
 from bs4 import BeautifulSoup  # import moved to top for efficiency
 
@@ -126,6 +128,9 @@ class Crawler:
         session: Optional[requests.Session] = None,
         timeout: float = 10.0,
         user_agent: str = "AttuarioAI/0.1 (+https://github.com)",
+        use_cache: bool = True,
+        cache_expire_after: int = 3600,
+        max_workers: int = 4,
     ) -> None:
         """
         Initialize the crawler.
@@ -140,13 +145,34 @@ class Crawler:
             user_agent (str, optional): The User-Agent string sent with HTTP requests.
                 This identifies the crawler to web servers and is used for robots.txt compliance.
                 Defaults to "AttuarioAI/0.1 (+https://github.com)".
+            use_cache (bool, optional): Enable caching of HTTP responses. Defaults to True.
+            cache_expire_after (int, optional): Cache expiration time in seconds. Defaults to 3600.
+            max_workers (int, optional): Maximum number of parallel workers for fetching.
+                Defaults to 4. Set to 1 to disable parallelization.
         """
         self.base_url = base_url.rstrip("/")
         self.max_pages = max_pages
         self.max_depth = max_depth
         self.delay_seconds = delay_seconds
         self.timeout = timeout
-        self._session = session or requests.Session()
+        self.max_workers = max_workers
+
+        # Setup session with optional caching
+        if session is None:
+            if use_cache:
+                self._session = requests_cache.CachedSession(
+                    cache_name=".attuario_cache",
+                    backend="sqlite",
+                    expire_after=cache_expire_after,
+                )
+                logger.info(
+                    f"HTTP caching enabled (expire_after={cache_expire_after}s)"
+                )
+            else:
+                self._session = requests.Session()
+        else:
+            self._session = session
+
         self._session.headers.setdefault("User-Agent", user_agent)
 
         parsed = urlparse(self.base_url)
@@ -156,7 +182,8 @@ class Crawler:
 
         logger.info(f"Initializing crawler for {self.base_url}")
         logger.info(
-            f"Config: max_pages={max_pages}, max_depth={max_depth}, delay={delay_seconds}s"
+            f"Config: max_pages={max_pages}, max_depth={max_depth}, "
+            f"delay={delay_seconds}s, max_workers={max_workers}"
         )
 
         self._robots = RobotsPolicy(
@@ -168,10 +195,6 @@ class Crawler:
         if self._robots.crawl_delay:
             self.delay_seconds = max(self.delay_seconds, self._robots.crawl_delay)
             logger.info(f"Adjusted delay to {self.delay_seconds}s based on robots.txt")
-
-            def allows(self, url: str) -> bool:
-                """Check if crawling the given URL is allowed by robots.txt."""
-                return self._robots.is_allowed(url)
 
     def close(self) -> None:
         """Close the HTTP session and release resources."""
@@ -197,6 +220,19 @@ class Crawler:
 
         pages_crawled = 0
 
+        # Use parallel fetching if max_workers > 1
+        if self.max_workers > 1:
+            yield from self._crawl_parallel(queue, visited, pages_crawled)
+        else:
+            yield from self._crawl_sequential(queue, visited, pages_crawled)
+
+    def _crawl_sequential(
+        self,
+        queue: Deque[tuple[str, int, Optional[str]]],
+        visited: Set[str],
+        pages_crawled: int,
+    ) -> Iterable[CrawlResult]:
+        """Sequential crawling (original implementation)."""
         while queue and pages_crawled < self.max_pages:
             url, depth, referer = queue.popleft()
             normalized = self._normalize_url(url)
@@ -221,6 +257,69 @@ class Crawler:
             for link in self._extract_links(result.html, normalized):
                 if link not in visited and self._robots.is_allowed(link):
                     queue.append((link, depth + 1, normalized))
+
+        logger.info(f"Crawl completed. Total pages crawled: {pages_crawled}")
+
+    def _crawl_parallel(
+        self,
+        queue: Deque[tuple[str, int, Optional[str]]],
+        visited: Set[str],
+        pages_crawled: int,
+    ) -> Iterable[CrawlResult]:
+        """Parallel crawling using ThreadPoolExecutor."""
+        logger.info(f"Using parallel crawling with {self.max_workers} workers")
+
+        with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
+            while queue and pages_crawled < self.max_pages:
+                # Collect batch of URLs to fetch
+                batch = []
+                while (
+                    queue
+                    and len(batch) < self.max_workers
+                    and pages_crawled + len(batch) < self.max_pages
+                ):
+                    url, depth, referer = queue.popleft()
+                    normalized = self._normalize_url(url)
+                    if not self._robots.is_allowed(normalized):
+                        logger.info(f"URL disallowed by robots.txt: {normalized}")
+                        continue
+                    if normalized not in visited:
+                        visited.add(normalized)
+                        batch.append((normalized, depth, referer))
+
+                if not batch:
+                    break
+
+                # Submit all URLs in batch for parallel fetching
+                future_to_url = {
+                    executor.submit(self._fetch, url, referer): (url, depth, referer)
+                    for url, depth, referer in batch
+                }
+
+                # Process results as they complete
+                for future in as_completed(future_to_url):
+                    url, depth, referer = future_to_url[future]
+                    try:
+                        result = future.result()
+                        yield result
+                        pages_crawled += 1
+
+                        if result.error:
+                            logger.warning(f"Error fetching {url}: {result.error}")
+                        else:
+                            logger.info(
+                                f"Successfully crawled [{pages_crawled}/{self.max_pages}]: {url}"
+                            )
+
+                        # Extract links only if no error and depth allows
+                        if not result.error and depth < self.max_depth:
+                            for link in self._extract_links(result.html, url):
+                                if link not in visited and self._robots.is_allowed(
+                                    link
+                                ):
+                                    queue.append((link, depth + 1, url))
+                    except Exception as exc:
+                        logger.error(f"Unexpected error processing {url}: {exc}")
 
         logger.info(f"Crawl completed. Total pages crawled: {pages_crawled}")
 
