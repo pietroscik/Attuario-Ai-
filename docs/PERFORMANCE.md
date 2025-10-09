@@ -189,3 +189,71 @@ pytest -v
 - Decrease `--delay` if target server allows
 - Use caching for repeated crawls
 - Ensure adequate network bandwidth
+
+## Benchmark Examples
+
+The `examples/` directory contains sample HTML pages that demonstrate the system's capabilities and can be used for benchmarking:
+
+### Sample Pages Overview
+
+```bash
+# Test with a single example
+python -c "
+from attuario_ai import PageParser, extract_metrics, score_page, ScoreWeights
+from pathlib import Path
+
+html = Path('examples/sample_page_1.html').read_text()
+parser = PageParser()
+parsed = parser.parse('https://example.com', html, 0)
+metrics = extract_metrics(parsed.text, html)
+score = score_page(metrics, parsed.metadata, ScoreWeights())
+print(f'Title: {parsed.title}')
+print(f'Score: {score.composite:.1f} - {score.classification}')
+print(f'Actuarial terms: {len(metrics.actuarial_terms)} types')
+print(f'Formulas: {metrics.has_formula}, Tables: {metrics.has_table}')
+"
+```
+
+### Expected Results
+
+The three sample pages demonstrate different quality levels:
+
+1. **sample_page_1.html** - Risk Margin analysis
+   - Score: **88.5** (Eccellente)
+   - 565 words, 8 actuarial terms, 22 citations
+   - Contains formulas, tables, and regulatory references
+   
+2. **sample_page_2.html** - Best Estimate guide
+   - Score: **84.0** (Buono)
+   - 282 words, 7 actuarial terms, 9 citations
+   - Good technical content with examples
+   
+3. **sample_page_3.html** - Basic life insurance intro
+   - Score: **71.7** (Buono)
+   - 235 words, 6 actuarial terms, 4 citations
+   - General overview with limited technical depth
+
+### Performance Benchmarks
+
+These examples can be used to benchmark the system:
+
+```bash
+# Measure parsing performance
+time python -c "
+from attuario_ai import PageParser
+from pathlib import Path
+parser = PageParser()
+for i in [1,2,3]:
+    html = Path(f'examples/sample_page_{i}.html').read_text()
+    parsed = parser.parse(f'file://example-{i}', html, 0)
+    print(f'Parsed page {i}: {len(parsed.text)} chars')
+"
+
+# Compare sequential vs parallel processing
+# (requires modification to process multiple files)
+```
+
+Full expected output is available in [examples/expected_output.json](../examples/expected_output.json).
+
+See also: [examples/README.md](../examples/README.md) for detailed documentation of the sample pages.
+
